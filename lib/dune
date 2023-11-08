@@ -1,2 +1,19 @@
 (library
- (name fpse2023_raytracer))
+ (name parse)
+ (modules parse))
+
+ (library
+ (name ray)
+ (modules ray))
+
+ (library
+ (name shape)
+ (modules shape))
+
+ (library
+ (name sphere)
+ (modules sphere))
+
+ (library
+ (name vector)
+ (modules vector))

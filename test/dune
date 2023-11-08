@@ -1,2 +1,2 @@
 (test
- (name fpse2023_raytracer))
+ (name tests))
