@@ -1,0 +1,2 @@
+(library
+ (name fpse2023_raytracer))
