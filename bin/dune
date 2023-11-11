@@ -1,4 +1,4 @@
 (executable
- (public_name fpse2023_raytracer)
  (name main)
- (libraries parse))
+ (public_name fpse2023_raytracer)
+ (libraries fpse2023_raytracer_lib))

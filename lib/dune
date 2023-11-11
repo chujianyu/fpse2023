@@ -1,19 +1,5 @@
 (library
- (name parse)
- (modules parse))
-
- (library
- (name ray)
- (modules ray))
-
- (library
- (name shape)
- (modules shape))
-
- (library
- (name sphere)
- (modules sphere))
-
- (library
- (name vector)
- (modules vector))
+ (name fpse2023_raytracer_lib)
+ (public_name fpse2023_raytracer.lib)
+ (modules_without_implementation shape)
+ (modules :standard))
