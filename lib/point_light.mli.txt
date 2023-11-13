@@ -1,0 +1,8 @@
+[@@@warning "-69-27-33"]
+
+open Ray
+open Vector
+
+module Point_light : sig
+  val getAmbient : Ray.t -> Vector3f.t
+end
