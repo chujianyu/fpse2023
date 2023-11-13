@@ -4,6 +4,7 @@ sig
 	type t
     type elt_t
 	val create : x:float -> y:float -> z:float -> t
+    val empty : unit ->  t
 
     val add : t -> t -> t
     val subtract : t -> t -> t

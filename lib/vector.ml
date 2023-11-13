@@ -4,16 +4,16 @@ sig
 	type t
     type elt_t
 	val create : x:float -> y:float -> z:float -> t
+  val empty : unit ->  t
+  val add : t -> t -> t
+  val subtract : t -> t -> t
+  val scale : t -> float -> t
+  val dot : t -> t -> float
 
-    val add : t -> t -> t
-    val subtract : t -> t -> t
-    val scale : t -> float -> t
-    val dot : t -> t -> float
-
-    val ( *: ): t -> float -> t
-    val ( +: ): t -> t -> t
-    val ( -: ): t -> t -> t
-    val ( /: ): t -> float -> t
+  val ( *: ): t -> float -> t
+  val ( +: ): t -> t -> t
+  val ( -: ): t -> t -> t
+  val ( /: ): t -> float -> t
 end
 
 [@@@warning "-69-27"]
@@ -23,6 +23,8 @@ struct
   type t = { x: float; y: float; z: float }
 
   let create ~x ~y ~z = { x; y; z }
+
+  let empty () = create ~x:0. ~y:0. ~z:0.
 
   let add v1 v2 =
     create ~x:(v1.x +. v2.x) ~y:(v1.y +. v2.y) ~z:(v1.z +. v2.z)

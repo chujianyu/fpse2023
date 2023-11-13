@@ -8,4 +8,6 @@ struct
 
   let create ~center ~radius = {center; radius}
   let intersect sphere ~(ray:Ray.t) = None
+
+  let normal_at sphere ~pos = Vector3f.empty ()
 end
