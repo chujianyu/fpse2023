@@ -1,4 +1,4 @@
 (executable
  (name main)
  (public_name fpse2023_raytracer)
- (libraries fpse2023_raytracer_lib))
+ (libraries fpse2023_raytracer_lib graphics))
