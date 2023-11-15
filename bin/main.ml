@@ -1,1 +1,1 @@
-let () = Graphics.open_graph " 300x100+50-0"
+let () = ()

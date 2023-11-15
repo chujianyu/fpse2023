@@ -5,6 +5,7 @@ sig
     type elt_t
 	val create : x:float -> y:float -> z:float -> t
   val empty : unit ->  t
+  val from_list : elt_t list -> t
   val add : t -> t -> t
   val subtract : t -> t -> t
   val scale : t -> float -> t
@@ -25,6 +26,10 @@ struct
   let create ~x ~y ~z = { x; y; z }
 
   let empty () = create ~x:0. ~y:0. ~z:0.
+
+  let from_list ls = match ls with
+  | [x;y;z] -> create ~x ~y ~z
+  | _ -> failwith "malformed list; cannot convert to Vector3f"
 
   let add v1 v2 =
     create ~x:(v1.x +. v2.x) ~y:(v1.y +. v2.y) ~z:(v1.z +. v2.z)

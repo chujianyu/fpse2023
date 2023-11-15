@@ -3,7 +3,7 @@ open Vector
 open Ray
 open Shape
 
-module Sphere = 
+module Sphere : S = 
 struct
   type t = Sphere_params.t
   let create param = match param with
