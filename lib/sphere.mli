@@ -1,4 +1,4 @@
 
 open Shape
 
-module Sphere : S
+val make_sphere_item : Sphere_params.t -> (module S)

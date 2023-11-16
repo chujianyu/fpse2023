@@ -30,16 +30,17 @@ sig
       radius : float;
     }
 end 
-module Shape_create_params : 
+(* module Shape_create_params : 
   sig
     type t =
     | Sphere_params of Sphere_params.t
     | Triangle_params of Triangle_params.t
-  end
+  end *)
 module type S = 
   sig
     type t
-    val create : Shape_create_params.t -> (t, string) result
-    val intersect : t -> ray:Ray.t -> float option
-    val normal_at : t -> pos:Vector3f.t -> Vector3f.t
+    val item : t
+    (* val create : Shape_create_params.t -> (t, string) result *)
+    val intersect : ray:Ray.t -> float option
+    val normal_at : pos:Vector3f.t -> Vector3f.t
   end
