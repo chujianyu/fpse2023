@@ -4,7 +4,6 @@ open Vector
 
 
 (* Module to parse parse the input json file as given in example_input/ *)
-module Parse : 
-  sig
-  (*define function here*)
+module Parse = struct
+
   end
