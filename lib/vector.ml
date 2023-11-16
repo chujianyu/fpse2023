@@ -6,6 +6,7 @@ sig
 	val create : x:float -> y:float -> z:float -> t
   val empty : unit ->  t
   val from_list : elt_t list -> t
+  val to_tuple : t -> elt_t * elt_t * elt_t
   val add : t -> t -> t
   val subtract : t -> t -> t
   val scale : t -> float -> t
@@ -31,6 +32,8 @@ struct
   | [x;y;z] -> create ~x ~y ~z
   | _ -> failwith "malformed list; cannot convert to Vector3f"
 
+  let to_tuple {x;y;z} = (x,y,z)
+
   let add v1 v2 =
     create ~x:(v1.x +. v2.x) ~y:(v1.y +. v2.y) ~z:(v1.z +. v2.z)
 
@@ -49,4 +52,5 @@ struct
 
   let dot v1 v2 =
     (v1.x *. v2.x) +. (v1.y *. v2.y) +. (v1.z *. v2.z)
+
   end
