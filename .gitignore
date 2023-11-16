@@ -25,5 +25,8 @@ setup.log
 # Dune generated files
 *.install
 
+# Temporary working files
+temp*
+
 # Local OPAM switch
 _opam/
