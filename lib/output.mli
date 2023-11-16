@@ -1,4 +1,4 @@
-[@@@warning "-69-27"]
+[@@@warning "-69-27-33"]
 
 module Output : 
   sig
