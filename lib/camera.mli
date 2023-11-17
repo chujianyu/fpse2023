@@ -3,7 +3,7 @@ open Vector
 open Ray
 
 module Camera : sig
-  type t 
+  type t  [@@deriving sexp]
 
   val create : height_angle:float -> pos:Vector3f.t -> up:Vector3f.t -> forward:Vector3f.t -> t
   (* Given indices i and j, and the width and height of the image, return the ray shot through that pixel 

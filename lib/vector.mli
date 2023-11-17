@@ -1,9 +1,9 @@
 
 module type V3 =
 sig 
-	type t
-    type elt_t
-	  val create : x:float -> y:float -> z:float -> t
+	type t  [@@deriving sexp]
+    type elt_t  [@@deriving sexp]
+	val create : x:float -> y:float -> z:float -> t
     val empty : unit ->  t
     val from_list : elt_t list -> t
     val to_tuple : t -> elt_t * elt_t * elt_t
@@ -14,6 +14,8 @@ sig
     val scale : t -> float -> t
     val dot : t -> t -> float
     val cross : t -> t -> t
+    val normalize : t -> t
+    val norm : t -> float
 
 
     val ( *: ): t -> float -> t

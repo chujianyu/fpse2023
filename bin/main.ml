@@ -4,12 +4,13 @@ open Core
 open Fpse2023_raytracer_lib
 open Parse
 open Scene
+open Output
 
-(* let main in_filename out_filename width height () =
+let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit =
   in_filename
-  |> Parse.parse
-  |> Scene.ray_trace ~width ~height
-  |> Output.write ~out_filename *)
+  |> Parse.parse_scene
+  |> Scene.ray_trace ~width ~height ~rLimit ~cLimit
+  |> Output.write_rgb_file ~out_filename
 
   
 
@@ -48,7 +49,8 @@ let command =
     in
     fun () ->
       match validate_input_file in_filename, validate_dimensions width height, validate_recursion_limit recursion_limit, validate_cut_off_threshold cut_off_threshold with
-      | Ok (), Ok (), Ok (), Ok () -> print_endline "run"
+      | Ok (), Ok (), Ok (), Ok () -> 
+        main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold
       | Error (`Msg err), _, _, _ | _, Error (`Msg err), _, _ | _, _, Error (`Msg err), _ | _, _, _, Error (`Msg err) -> eprintf "Error: %s\n" err)
 
 let () = Command_unix.run ~version:"1.0" ~build_info:"RWO" command
