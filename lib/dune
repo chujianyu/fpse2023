@@ -2,4 +2,5 @@
  (name fpse2023_raytracer_lib)
  (public_name fpse2023_raytracer.lib)
  (modules_without_implementation shape light)
- (modules :standard))
+ (modules :standard)
+ (libraries core))
