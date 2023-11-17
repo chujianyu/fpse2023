@@ -1,7 +1,6 @@
 open Vector
 
-
-
+(* Module that represents a Ray in the scene. *)
 module Ray : sig
   type t
   val create : orig:Vector3f.t -> dir:Vector3f.t -> t

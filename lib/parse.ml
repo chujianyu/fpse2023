@@ -37,7 +37,7 @@ let parse_sphere json =
     radius = member "radius" json |> to_float;
     material = parse_material (member "material" json)}
   in
-  Sphere.make_sphere_item params
+  Sphere.make_sphere params
 
 let parse_point_light json = 
   let pos = json |> member "pos" |> parse_vector in

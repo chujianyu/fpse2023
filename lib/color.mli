@@ -1,5 +1,6 @@
 [@@@warning "-69-27-33-32"]
 open Vector
+
 (* module Color, with r g b values b/w 0. and 1.*)
 module Color : 
   sig
@@ -22,7 +23,5 @@ module Color :
     (* component-wise multiplication *)
     val mul : t -> t -> t
     val scale : t -> float -> t
-
-
 
   end

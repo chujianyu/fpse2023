@@ -1,4 +1,5 @@
 
+(* Module type for 3-dim vectors*)
 module type V3 =
 sig 
 	type t  [@@deriving sexp]
@@ -24,7 +25,6 @@ sig
     val ( /: ): t -> float -> t
 
 end
-(** Vectors module *)
 
-
+(* Module for 3-dim flaot vectors *)
 module Vector3f : V3 with type elt_t = float
