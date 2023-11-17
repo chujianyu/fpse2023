@@ -19,7 +19,7 @@
  (name fpse2023_raytracer)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune yojson graphics)
+ (depends ocaml dune yojson domainslib)
  (tags
   (topics "to describe" your project)))
 
