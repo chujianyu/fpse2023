@@ -25,6 +25,15 @@ let validate_dimensions width height =
   if width > 0 && height > 0 then Ok ()
   else Error (`Msg "WIDTH and HEIGHT must be both positive")
 
+let validate_recursion_limit limit =
+  if limit >= 0 then Ok ()
+  else Error (`Msg "RECURSION LIMIT must be non-negative")
+
+let validate_cut_off_threshold threshold =
+  let open Float in
+  if threshold > 0.0 && threshold <= 1.0 then Ok ()
+  else Error (`Msg "CUTOFF THRESHOLD must be between 0 and 1")
+
 let command =
   Command.basic
     ~summary:"OCaml Ray Tracer"
@@ -33,10 +42,13 @@ let command =
       and out_filename = flag "--out" (required string) ~doc:"OUTPUT FILE NAME"
       and width = flag "--width" (optional_with_default 640 int) ~doc:"OUTPUT IMAGE WIDTH (default 640)"
       and height = flag "--height" (optional_with_default 480 int) ~doc:"OUTPUT IMAGE HEIGHT (default 480)"
+      and recursion_limit = flag "--rLimit" (optional_with_default 5 int) ~doc:"RECURSION DEPTH LIMIT (default 5)"
+      and cut_off_threshold = flag "--cutOff" (optional_with_default 0.0001 float) 
+        ~doc:"CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
     in
     fun () ->
-      match validate_input_file in_filename, validate_dimensions width height with
-      | Ok (), Ok () -> print_endline "run"
-      | Error (`Msg err), _ | _, Error (`Msg err) -> eprintf "Error: %s\n" err)
+      match validate_input_file in_filename, validate_dimensions width height, validate_recursion_limit recursion_limit, validate_cut_off_threshold cut_off_threshold with
+      | Ok (), Ok (), Ok (), Ok () -> print_endline "run"
+      | Error (`Msg err), _, _, _ | _, Error (`Msg err), _, _ | _, _, Error (`Msg err), _ | _, _, _, Error (`Msg err) -> eprintf "Error: %s\n" err)
 
 let () = Command_unix.run ~version:"1.0" ~build_info:"RWO" command
