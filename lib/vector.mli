@@ -13,6 +13,7 @@ sig
     val subtract : t -> t -> t
     val scale : t -> float -> t
     val dot : t -> t -> float
+    val cross : t -> t -> t
 
 
     val ( *: ): t -> float -> t
