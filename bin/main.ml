@@ -10,7 +10,7 @@ let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit =
   in_filename
   |> Parse.parse_scene
   |> Scene.ray_trace ~width ~height ~rLimit ~cLimit
-  |> Output.write_rgb_file ~out_filename
+  |> Output.output_rgb_data_to_file ~width ~height ~out_filename
 
   
 
@@ -21,6 +21,11 @@ let validate_input_file filename =
     match Filename.split_extension filename with
     | _, Some "json" -> Ok ()
     | _ -> Error (`Msg "INPUT FILE must have a .json extension")
+
+let validate_output_filename filename =
+  match Filename.split_extension filename with
+  | _, Some "ppm" -> Ok ()
+  | _ -> Error (`Msg "OUTPUT FILE must have a .ppm extension")
 
 let validate_dimensions width height =
   if width > 0 && height > 0 then Ok ()
@@ -48,9 +53,9 @@ let command =
         ~doc:"CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
     in
     fun () ->
-      match validate_input_file in_filename, validate_dimensions width height, validate_recursion_limit recursion_limit, validate_cut_off_threshold cut_off_threshold with
-      | Ok (), Ok (), Ok (), Ok () -> 
+      match validate_input_file in_filename, validate_dimensions width height, validate_recursion_limit recursion_limit, validate_cut_off_threshold cut_off_threshold, validate_output_filename out_filename with
+      | Ok (), Ok (), Ok (), Ok (), Ok () -> 
         main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold
-      | Error (`Msg err), _, _, _ | _, Error (`Msg err), _, _ | _, _, Error (`Msg err), _ | _, _, _, Error (`Msg err) -> eprintf "Error: %s\n" err)
+      | Error (`Msg err), _, _, _, _ | _, Error (`Msg err), _, _, _ | _, _, Error (`Msg err), _, _ | _, _, _, Error (`Msg err), _ | _, _, _, _, Error (`Msg err)  -> eprintf "Error: %s\n" err)
 
 let () = Command_unix.run ~version:"1.0" ~build_info:"RWO" command
