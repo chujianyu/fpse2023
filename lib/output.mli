@@ -4,6 +4,6 @@ open Color
 module Output : 
   sig
   (* writes an .ppm file given the out_filename and 2d list of colors*)
-  val output_rgb_data_to_file: out_filename:string -> Color.t list list -> unit
+  val output_rgb_data_to_file: out_filename:string -> width:int -> height:int -> Color.t list list -> unit
   end
 
