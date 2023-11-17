@@ -1,8 +1,8 @@
-
+open Sexplib.Std
 module type V3 =
 sig 
-	type t
-    type elt_t
+	type t [@@deriving sexp]
+    type elt_t  [@@deriving sexp]
 	val create : x:float -> y:float -> z:float -> t
   val empty : unit ->  t
   val from_list : elt_t list -> t
@@ -12,6 +12,8 @@ sig
   val scale : t -> float -> t
   val dot : t -> t -> float
   val cross : t -> t -> t
+  val normalize : t -> t
+  val norm : t -> float
 
   val ( *: ): t -> float -> t
   val ( +: ): t -> t -> t
@@ -22,8 +24,8 @@ end
 [@@@warning "-69-27"]
 module Vector3f : V3 with type elt_t = float = 
 struct
-  type elt_t = float
-  type t = { x: float; y: float; z: float }
+  type elt_t = float [@@deriving sexp]
+  type t = { x: float; y: float; z: float } [@@deriving sexp]
 
   let create ~x ~y ~z = { x; y; z }
 
@@ -58,5 +60,12 @@ struct
     create ~x:(v1.y *. v2.z -. v1.z *. v2.y)
             ~y:(v1.z *. v2.x -. v1.x *. v2.z)
             ~z:(v1.x *. v2.y -. v1.y *. v2.x)
+
+  let normalize v =
+    let len = sqrt (dot v v) in
+    if len = 0. then v
+    else scale v (1. /. len)
+
+  let norm v = sqrt (dot v v)
 
   end
