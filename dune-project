@@ -5,11 +5,10 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github chujianyu/fpse2023_raytracer))
 
-(authors "Author Name")
+(authors "Xiaoyu Guo, Amit Rehan, Chujian Yu")
 
-(maintainers "Maintainer Name")
 
 (license LICENSE)
 
@@ -17,10 +16,7 @@
 
 (package
  (name fpse2023_raytracer)
- (synopsis "A short synopsis")
- (description "A longer description")
- (depends ocaml dune yojson domainslib)
- (tags
-  (topics "to describe" your project)))
+ (description "Ocaml Functional Ray Tracer")
+ (depends ocaml dune yojson domainslib))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
