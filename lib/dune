@@ -4,4 +4,4 @@
  (modules :standard)
  (preprocess
  (pps ppx_jane))
- (libraries core yojson))
+ (libraries core yojson domainslib))
