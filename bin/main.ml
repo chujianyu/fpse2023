@@ -6,14 +6,20 @@ open Parse
 open Scene
 open Output
 
+let timed_ray_trace scene ~width ~height ~rLimit ~cLimit = 
+  let start_time = Time_float.now () in
+  let img = Scene.ray_trace scene ~width ~height ~rLimit ~cLimit in
+  let end_time = Time_float.now () in
+  let duration = Time_float.diff end_time start_time in
+  Printf.printf "Ray tracing completed in: %f seconds\n" (Time_float.Span.to_sec duration);
+  img
+
 let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit =
   in_filename
   |> Parse.parse_scene
-  |> Scene.ray_trace ~width ~height ~rLimit ~cLimit
+  |> timed_ray_trace ~width ~height ~rLimit ~cLimit
   |> Output.output_rgb_data_to_file ~width ~height ~out_filename
-
   
-
 let validate_input_file filename =
   match Sys_unix.file_exists filename with
   | `No | `Unknown -> Error (`Msg "INPUT FILE not found")
