@@ -4,7 +4,7 @@ open Ray
 open Core
 module Camera = struct
 
-  type t = {height_angle : float; pos : Vector3f.t; up : Vector3f.t; forward : Vector3f.t}
+  type t = {height_angle : float; pos : Vector3f.t; up : Vector3f.t; forward : Vector3f.t} [@@deriving sexp]
 
   let create ~height_angle ~pos ~up ~forward = {height_angle; pos; up; forward}
 
@@ -27,7 +27,7 @@ module Camera = struct
     let up_component = up *: 2. *: Float.tan (height_angle /. 2.) in
     let bottom_left_pos = forward -: (right_component/:2.) -: (up_component/:2.) in
     let pixel_pos = 
-      bottom_left_pos +: right_component *: (0.5 +.  i) /: width +: up_component *: (0.5 +.  j) /: height 
+      bottom_left_pos +: right_component *: (0.5 +.  j) /: width +: up_component *: (0.5 +.  i) /: height 
     in
     Ray.create ~orig:pos ~dir:pixel_pos
 end

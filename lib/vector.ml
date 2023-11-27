@@ -1,4 +1,5 @@
 open Sexplib.Std
+(* Module type for 3-dim vectors*)
 module type V3 =
 sig 
 	type t [@@deriving sexp]

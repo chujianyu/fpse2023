@@ -10,5 +10,7 @@ module Ray = struct
   let create ~orig ~dir =
     { orig; dir }
   
+  let get_orig { orig; _ } = orig
+  let get_dir { dir; _ } = dir
 
 end
