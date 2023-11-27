@@ -61,7 +61,8 @@ module Scene = struct
     in
     List.fold shapes ~init:None ~f:f_keep_closest
 
-  let rec get_color {camera; lights; shapes} ray ~i ~j ~rLimit  = 
+    (* TODO: remove unused params *)
+  let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = 
     match get_first_intersection ray shapes with
     | None -> Color.empty
     | Some intersect -> 
@@ -102,7 +103,7 @@ T.parallel_for pool ~start:0 ~finish:(height - 1)
 Array.to_list (Array.map ~f:Array.to_list colors)
 
 let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 
-let num_domains = 10 in 
+let num_domains = 20 in 
 let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
 let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~pool) in
 T.teardown_pool pool;
