@@ -4,13 +4,18 @@ open Vector
 (* module Color, with r g b values b/w 0. and 1.*)
 module Color : 
   sig
-    type t [@@deriving sexp]
+  (* TODO: add fields *)
+  type t = {
+    r : float;
+    g : float;
+    b : float;
+  } [@@deriving sexp, fields ~getters]
 
     val make : r:float -> g:float -> b:float -> t
     val empty : t
-    val get_r : t -> float
+    (* val get_r : t -> float
     val get_g : t -> float
-    val get_b : t -> float
+    val get_b : t -> float *)
     val to_tuple : t -> float * float * float
 
     val to_vector : t -> Vector3f.t

@@ -15,9 +15,9 @@ module Output = struct
   in
   let color_to_string color =
     Printf.sprintf "%d %d %d " 
-    (channel_to_int @@ Color.get_b color) 
-    (channel_to_int @@ Color.get_g color) 
-    (channel_to_int @@ Color.get_b color) 
+    (channel_to_int @@ Color.r color) 
+    (channel_to_int @@ Color.g color) 
+    (channel_to_int @@ Color.b color) 
   in
   let lines = List.map colors 
   ~f:(fun row -> String.concat ~sep:"" (List.map row ~f:color_to_string)) 
