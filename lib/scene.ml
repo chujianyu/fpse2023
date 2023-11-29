@@ -62,7 +62,8 @@ module Scene = struct
     List.fold shapes ~init:None ~f:f_keep_closest
 
     (* TODO: remove unused params *)
-  let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = 
+    (*  let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = *)
+  let rec get_color {camera; lights; shapes} ray ~i ~j ~rLimit  = 
   match rLimit with 
   | 0 -> Color.empty
   | _ ->
@@ -70,6 +71,17 @@ module Scene = struct
     | None -> Color.empty
     | Some intersect -> 
       let light_contribution = get_light_contribution ray lights intersect in
+      let hit_front_face =  Vector3f.dot (Ray.get_dir ray) (intersect.normal) in 
+      if Core.Float.(<.) hit_front_face 0.  then 
+        let reflect_dir = Vector3f.reflect (Ray.get_dir ray) (intersect.normal) in 
+        let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in 
+        let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
+        (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit*)
+        let ref_light_contribution = get_color {camera; lights; shapes} reflect_ray ~i ~j ~rLimit in
+        let updated_light_contribution = Color.add ref_light_contribution light_contribution in 
+        updated_light_contribution
+      else
+      
       (* let recur_contribution =  *)
       light_contribution
     
