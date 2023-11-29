@@ -14,11 +14,19 @@ let timed_ray_trace scene ~width ~height ~rLimit ~cLimit =
   Printf.printf "Ray tracing completed in: %f seconds\n" (Time_float.Span.to_sec duration);
   img
 
+let timed_write_file img ~width ~height ~out_filename = 
+  let start_time = Time_float.now() in 
+  let _ = Output.output_rgb_data_to_file img ~width ~height ~out_filename in 
+  let end_time = Time_float.now() in 
+  let duration = Time_float.diff end_time start_time in 
+  Printf.printf "Writing output to file completed in: %f seconds\n" (Time_float.Span.to_sec duration)
+
 let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit =
   in_filename
   |> Parse.parse_scene
   |> timed_ray_trace ~width ~height ~rLimit ~cLimit
-  |> Output.output_rgb_data_to_file ~width ~height ~out_filename
+  (*|> Output.output_rgb_data_to_file ~width ~height ~out_filename*)
+  |> timed_write_file ~width ~height ~out_filename
   
 let validate_input_file filename =
   match Sys_unix.file_exists filename with
