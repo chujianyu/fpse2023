@@ -15,6 +15,9 @@ sig
   val cross : t -> t -> t
   val normalize : t -> t
   val norm : t -> float
+  val proj: t -> t -> t
+  
+  val reflect: t -> t -> t
 
   val ( *: ): t -> float -> t
   val ( +: ): t -> t -> t
@@ -66,14 +69,15 @@ struct
     let len = sqrt (dot v v) in
     if len = 0. then v
     else scale v (1. /. len)
-
-  let norm v = sqrt (dot v v)
+    let proj a b= scale b ((dot (b) (a))/. (dot (b) (b)))
+    let reflect a b =  subtract (scale (proj(a)(b)) (2.)) (a) 
+    let norm v = sqrt (dot v v)
   
 
 
 
-let proj a b= scale b ((dot (b) (a))/. (dot (b) (b)))
+
   
 
-let reflect a b =  subtract (scale (proj(a)(b)) (2.)) (a) 
+
   end
