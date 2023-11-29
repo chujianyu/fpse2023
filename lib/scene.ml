@@ -63,6 +63,9 @@ module Scene = struct
 
     (* TODO: remove unused params *)
   let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = 
+  match rLimit with 
+  | 0 -> Color.empty
+  | _ ->
     match get_first_intersection ray shapes with
     | None -> Color.empty
     | Some intersect -> 
