@@ -73,12 +73,18 @@ module Scene = struct
       let light_contribution = get_light_contribution ray lights intersect in
       let hit_front_face =  Vector3f.dot (Ray.get_dir ray) (intersect.normal) in 
       if Core.Float.(<.) hit_front_face 0.  then 
-        let reflect_dir = Vector3f.reflect (Ray.get_dir ray) (intersect.normal) in 
+        let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
         let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in 
         let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
+
         (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit*)
         let ref_light_contribution = Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1)) (intersect.material.specular) in
         let updated_light_contribution = Color.add ref_light_contribution light_contribution in 
+        (*let v1 = Vector3f.create ~x:10.0 ~y:10.0 ~z:0.0 in 
+        let v2 = Vector3f.create ~x:0.0 ~y:10.0 ~z:0.0 in 
+        let v3 = Vector3f.reflect v1 v2 in 
+        print_endline *)
+
         updated_light_contribution
       else
       
