@@ -17,7 +17,10 @@ sig
     val cross : t -> t -> t
     val normalize : t -> t
     val norm : t -> float
-
+    (*projects v1 onto v2*)
+    val proj: t -> t -> t
+    (*reflects v1 around v2*)
+    val reflect: t -> t -> t
 
     val ( *: ): t -> float -> t
     val ( +: ): t -> t -> t

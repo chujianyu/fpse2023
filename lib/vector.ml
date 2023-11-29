@@ -68,5 +68,12 @@ struct
     else scale v (1. /. len)
 
   let norm v = sqrt (dot v v)
+  
 
+
+
+let proj a b= scale b ((dot (b) (a))/. (dot (b) (b)))
+  
+
+let reflect a b =  subtract (scale (proj(a)(b)) (2.)) (a) 
   end
