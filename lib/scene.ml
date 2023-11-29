@@ -77,7 +77,7 @@ module Scene = struct
         let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in 
         let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
         (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit*)
-        let ref_light_contribution = get_color {camera; lights; shapes} reflect_ray ~i ~j ~rLimit in
+        let ref_light_contribution = Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1)) (intersect.material.specular) in
         let updated_light_contribution = Color.add ref_light_contribution light_contribution in 
         updated_light_contribution
       else
