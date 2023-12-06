@@ -1,2 +1,17 @@
 (test
- (name tests))
+ (name tests)
+ (libraries
+    core
+    ounit2
+    fpse2023_raytracer_lib
+  )
+ )
+
+
+
+
+
+
+
+
+
