@@ -3,4 +3,4 @@
  (public_name fpse2023_raytracer)
  (libraries core core_unix.command_unix core_unix fpse2023_raytracer_lib)
  (preprocess
- (pps ppx_jane)))
+ (pps ppx_jane bisect_ppx)))
