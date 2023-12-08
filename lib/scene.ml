@@ -33,9 +33,11 @@ module Scene = struct
     print_endline @@ to_string scene;
     scene
   let get_light_contribution ray (lights:(module L) list) ({intersection_time; position; normal; material}:Intersection_record.t) : Color.t = 
+   
     let f_accumulate acc light_module =
       let module Cur_light = (val light_module : L) in
       let diffuse = Color.mul (Cur_light.get_diffuse ray position normal material) material.diffuse in
+      
       (* let specular = Color.mul (Cur_light.get_specular ray intersection) intersection.material.specular in *)
       let total = Color.add diffuse Color.empty in
       Color.add acc total
@@ -70,7 +72,9 @@ module Scene = struct
     match get_first_intersection ray shapes with
     | None -> Color.empty
     | Some intersect -> 
-      let light_contribution = get_light_contribution ray lights intersect in
+      let emission = intersect.material.emissive in  
+      let light_contribution = get_light_contribution ray lights intersect |> Color.add emission in
+
       let hit_front_face =  Vector3f.dot (Ray.get_dir ray) (intersect.normal) in 
       if Core.Float.(<.) hit_front_face 0.  then 
         let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
@@ -78,13 +82,19 @@ module Scene = struct
         let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
 
         (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit*)
-        let ref_light_contribution = Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1)) (intersect.material.specular) in
+        let ref_light_contribution =Color.scale (Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1)) (intersect.material.specular)) (1.0) in
         let updated_light_contribution = Color.add ref_light_contribution light_contribution in 
         (*let v1 = Vector3f.create ~x:10.0 ~y:10.0 ~z:0.0 in 
         let v2 = Vector3f.create ~x:0.0 ~y:10.0 ~z:0.0 in 
         let v3 = Vector3f.reflect v1 v2 in 
         print_endline *)
-
+        
+(*
+   ouit 2 seq fold left 
+   assert command 
+   see txt
+   test name see txt
+*)
         updated_light_contribution
       else
       
