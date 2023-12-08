@@ -3,11 +3,8 @@ open Core
 open OUnit2
 open Fpse2023_raytracer_lib
 
-
-
-
-
-
+(*ref:https://bheisler.github.io/post/writing-raytracer-in-rust-part-2/*)
+(*ref:Ray Tracer Challenge : A Test-driven Guide to Your First 3d Renderer*)
 
 
 
@@ -61,37 +58,51 @@ let add_vector _ =
       |Some actual_intersect_data -> (
         let () = Core.Printf.printf "%s" (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t actual_intersect_data.position)) in
         assert_equal 0 @@  (Vector3f.compare expected_pos actual_intersect_data.position )
-      )
+      );;
       
-      
-
      
+
+Sys_unix.chdir "../../..";;
+let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
+  let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+(*assert true*)
+assert_command 
+~ctxt:ctxt
+"./_build/default/bin/main.exe" 
+["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
+"--out"; "EMISSION_TEST.ppm"; 
+"--height"; "500"; 
+"--width"; "500"; 
+"--rLimit"; "5"; 
+"--cutOff"; "0.0001"]
+~foutput:(fun seq -> try 
+Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+with End_of_file ->
+())
+
+               
+
 let vector_tests =
   "vector_tests"
   >: test_list
         [
-      
-  
-
           "add_vector">:: add_vector;
           "reflect_vector">:: reflect_vector;
-        
-          
-        
         ]
 
-        let shape_tests =
-          "shape_tests"
+let shape_tests =
+  "shape_tests"
+  >: test_list
+        [
+          "sphere_intersect_test">:: sphere_intersect_test;
+        ]
+        let full_image_tests =
+          "full_image_tests"
           >: test_list
                 [
-              
-          
-        
                   "sphere_intersect_test">:: sphere_intersect_test;
-                
-                  
-                
                 ]
+      
 let series =
   "raytracer tests"
   >::: [
@@ -99,5 +110,8 @@ let series =
     shape_tests;
   ]
 
-
   let () = run_test_tt_main series
+  let () =
+  run_test_tt_main ("foo" >:: sphere_emission_material_no_lights_test)
+
+  
