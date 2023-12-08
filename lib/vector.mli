@@ -2,8 +2,8 @@
 (* Module type for 3-dim vectors*)
 module type V3 =
 sig 
-	type t  [@@deriving sexp]
-    type elt_t  [@@deriving sexp]
+	type t  [@@deriving sexp,compare]
+    type elt_t  [@@deriving sexp,compare]
 	val create : x:float -> y:float -> z:float -> t
     val empty : unit ->  t
     val from_list : elt_t list -> t

@@ -2,8 +2,8 @@ open Sexplib.Std
 (* Module type for 3-dim vectors*)
 module type V3 =
 sig 
-	type t [@@deriving sexp]
-    type elt_t  [@@deriving sexp]
+	type t [@@deriving sexp,compare]
+    type elt_t  [@@deriving sexp,compare]
 	val create : x:float -> y:float -> z:float -> t
   val empty : unit ->  t
   val from_list : elt_t list -> t
@@ -28,8 +28,12 @@ end
 [@@@warning "-69-27"]
 module Vector3f : V3 with type elt_t = float = 
 struct
-  type elt_t = float [@@deriving sexp]
-  type t = { x: float; y: float; z: float } [@@deriving sexp]
+let compare_float (x)(y):int = 
+  Core.Float.compare x y 
+  type elt_t = float [@@deriving sexp,compare]
+  type t = { x: float; y: float; z: float } [@@deriving sexp,compare]
+
+ 
 
   let create ~x ~y ~z = { x; y; z }
 
