@@ -73,8 +73,11 @@ module Scene = struct
     | None -> Color.empty
     | Some intersect -> 
       let emission = intersect.material.emissive in  
-      let light_contribution = get_light_contribution ray lights intersect |> Color.add emission in
-
+      let albedo = intersect.material.shininess in 
+      let light_contributio = get_light_contribution ray lights intersect |> Color.add emission   in
+      let albedo_contribution = Color.scale light_contributio albedo in
+      let light_contribution = albedo_contribution in
+      
       let hit_front_face =  Vector3f.dot (Ray.get_dir ray) (intersect.normal) in 
       if Core.Float.(<.) hit_front_face 0.  then 
         let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
