@@ -5,11 +5,11 @@
 			"radius": 1.0,
 			"material" : {
                 "ambient":[0.7, 0.55, 0.6],
-                "shininess": 0.0,
+                "shininess": 0.5,
                 "diffuse": [0.7, 0.55, 0.6],
                 "specular": [0.7, 0.55, 0.6],
 				"emissive": [0.7, 0.55, 0.6],
-				"transparent": [0.7, 0.55, 0.6]
+				"transparent": [1.0,1.0,1.0]
             }
 		},
         {
@@ -17,10 +17,10 @@
 			"radius": 2.0,
 			"material" : {
                 "ambient": [0.4, 0.55, 0.4],
-                "shininess": 0.0,
+                "shininess": 1.0,
                 "diffuse":  [0.4, 0.55, 0.4],
                 "specular":  [0.4, 0.55, 0.4],
-				"emissive": [0.7, 0.55, 0.6],
+				"emissive": [0.0, 0.0, 0.0],
 				"transparent": [0.7, 0.55, 0.6]
             }
 		}
@@ -32,7 +32,7 @@
 			"norm": [[0.0, 1.0, 0.0],[0.0, 1.0, 0.0],[0.0, 1.0, 0.0]],
 			"material" : {
                 "ambient": [0.4, 0.55, 0.4],
-                "shininess": 0.0,
+                "shininess": 1.0,
                 "diffuse":  [0.4, 0.55, 0.4],
                 "specular":  [0.4, 0.55, 0.4],
 				"emissive": [0.7, 0.55, 0.6],
