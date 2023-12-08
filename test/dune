@@ -4,6 +4,8 @@
     core
     ounit2
     fpse2023_raytracer_lib
+    core_unix
+    core_unix.sys_unix
   )
  )
 
