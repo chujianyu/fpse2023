@@ -4,15 +4,10 @@ open Ray
 open Core
 module Camera = struct
 
-  type t = {height_angle : float; pos : Vector3f.t; up : Vector3f.t; forward : Vector3f.t} [@@deriving sexp]
+  type t = {height_angle : float; pos : Vector3f.t; up : Vector3f.t; forward : Vector3f.t} [@@deriving sexp, fields ~getters]
 
   let create ~height_angle ~pos ~up ~forward = {height_angle; pos; up; forward}
 
-
-
-  let get_pos camera = camera.pos
-  let get_forward camera = camera.forward
-  let get_up camera = camera.up
   let get_right camera = Vector3f.cross camera.forward camera.up
 
   let get_ray {height_angle; pos; up; forward} ~(i:int) ~(j:int) ~(width:int) ~(height:int) = 

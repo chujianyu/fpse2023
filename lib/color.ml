@@ -12,9 +12,6 @@ module Color =
 
     let make ~(r: float) ~(g: float) ~(b: float) = { r = r; g = g; b = b }
     let empty = make ~r:0. ~g:0. ~b:0.
-    (* let get_r color = color.r
-    let get_g color = color.g
-    let get_b color = color.b *)
 
     let to_tuple col = (col.r, col.g, col.b)
 
