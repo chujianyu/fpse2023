@@ -6,7 +6,73 @@ open Fpse2023_raytracer_lib
 (*ref:https://bheisler.github.io/post/writing-raytracer-in-rust-part-2/*)
 (*ref:Ray Tracer Challenge : A Test-driven Guide to Your First 3d Renderer*)
 
+let test_from_list _ = 
+  let expected_1 = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:5. ~y:6. ~z:7. in 
+  let result_1 = Fpse2023_raytracer_lib.Vector.Vector3f.from_list [5.;6.;7.] in 
+  assert_equal result_1 @@ expected_1
+  (*assert_raises Failure "malformed list; cannot convert to Vector3f" (fun() -> Vector.Vector3f.from_list [1.;2.])*)
 
+
+
+let test_empty_vector _ = 
+  let expected = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:0. ~y:0. ~z:0. in
+  let result = Fpse2023_raytracer_lib.Vector.Vector3f.empty() in 
+  assert_equal result @@ expected 
+
+let test_to_tuple _ = 
+  let expected = (1.,2.,3.) in 
+  let result = Fpse2023_raytracer_lib.Vector.Vector3f.to_tuple (Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:1. ~y:2. ~z:3.) in 
+  assert_equal result @@ expected
+
+let test_divide_vector _ = 
+  let open Fpse2023_raytracer_lib.Vector.Vector3f in 
+  let expected = create ~x:1. ~y:1. ~z:1. in 
+  let result = (/:) (create ~x:5. ~y:5. ~z:5.) 5. in 
+  assert_equal result @@ expected
+
+let test_cross _ =
+  let open Vector.Vector3f in 
+  let v1 = create ~x:1. ~y:2. ~z:3. in 
+  let v2 = create ~x:4. ~y:5. ~z:6. in 
+  let expected = create ~x:(-3.) ~y:6. ~z:(-3.) in 
+  assert_equal expected @@ cross v1 v2
+
+let test_to_tuple_col _ = 
+  let expected = (1.0, 1.0, 1.0) in 
+  let result = Color.Color.to_tuple {Fpse2023_raytracer_lib.Color.Color.r = 1.; g = 1.; b = 1.} in 
+  assert_equal result @@ expected
+
+let test_to_vector_col _ = 
+  let expected = Vector.Vector3f.create ~x:1. ~y:1. ~z:1. in 
+  let result = Color.Color.to_vector {Fpse2023_raytracer_lib.Color.Color.r = 1.; g = 1.; b = 1.} in 
+  assert_equal result @@ expected
+
+let test_from_vector_col _ = 
+  let expected = {Fpse2023_raytracer_lib.Color.Color.r = 2.; g = 2.; b = 2.} in 
+  let result = Color.Color.from_vector (Vector.Vector3f.create ~x:2. ~y:2. ~z:2.) in 
+  assert_equal result @@ expected
+
+let color_1 = Color.Color.make ~r:6. ~g:6. ~b:6. 
+let color_2 = Color.Color.make ~r:1. ~g:2. ~b:3.
+let test_add_col _ = 
+  let expected = Color.Color.make ~r:7. ~g:8. ~b:9. in 
+  let result = Color.Color.add color_1 color_2 in 
+  assert_equal result @@ expected
+
+let test_sub_col _ = 
+  let expected = Color.Color.make ~r:5. ~g:4. ~b:3. in 
+  let result = Color.Color.sub color_1 color_2 in 
+  assert_equal result @@ expected
+
+let test_mul_col _ = 
+  let expected = Color.Color.make ~r:6. ~g:12. ~b:18. in 
+  let result = Color.Color.mul color_1 color_2 in 
+  assert_equal result @@ expected
+
+let test_scale_col _ = 
+  let expected = Color.Color.make ~r:12. ~g:12. ~b:12. in 
+  let result = Color.Color.scale color_1 2.0 in 
+  assert_equal result @@ expected
 
 
 
@@ -88,7 +154,25 @@ let vector_tests =
         [
           "add_vector">:: add_vector;
           "reflect_vector">:: reflect_vector;
+          "test_empty_vector" >:: test_empty_vector;
+          "test_from_list" >:: test_from_list;
+          "test_to_tuple" >:: test_to_tuple;
+          "test_divide_vector" >:: test_divide_vector;
+          "test_cross" >:: test_cross;
         ]
+
+let color_tests = 
+  "color_tests"
+  >: test_list
+  [
+    "test_to_tuple" >:: test_to_tuple_col;
+    "test_to_vector" >:: test_to_vector_col;
+    "test_from_vector" >:: test_from_vector_col;
+    "test_add" >:: test_add_col;
+    "test_sub" >:: test_sub_col;
+    "test_mul" >:: test_mul_col;
+    "test_scale" >:: test_scale_col;
+  ]
 
 let shape_tests =
   "shape_tests"
@@ -108,6 +192,7 @@ let series =
   >::: [
     vector_tests;
     shape_tests;
+    color_tests;
   ]
 
   let () = run_test_tt_main series
