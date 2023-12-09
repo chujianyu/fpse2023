@@ -31,7 +31,5 @@ temp*
 # Local OPAM switch
 _opam/
 
-#Output files
-output/
 
 .DS_Store
