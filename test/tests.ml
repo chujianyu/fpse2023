@@ -71,7 +71,7 @@ let test_mul_col _ =
 
 let test_div_col _ = 
   let expected = Color.Color.make ~r:6. ~g:3. ~b:2. in 
-  let result = Color.Color.mul color_1 color_2 in 
+  let result = Color.Color.div color_1 color_2 in 
   assert_equal result @@ expected
 
 let test_scale_col _ = 
