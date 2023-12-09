@@ -1,4 +1,3 @@
-[@@@warning "-69-27-33-26-32"]
 open Core
 open OUnit2
 open Fpse2023_raytracer_lib
@@ -201,7 +200,9 @@ let color_tests =
     "test_add" >:: test_add_col;
     "test_sub" >:: test_sub_col;
     "test_mul" >:: test_mul_col;
+    "test_div" >:: test_div_col;
     "test_scale" >:: test_scale_col;
+    "test_greater" >:: test_greater_col;
   ]
 
 let shape_tests =
