@@ -176,13 +176,21 @@ let sphere_intersect_test _ =
     in
     Quickcheck.test ~sexp_of:[%sexp_of: Ray.t] ray_gen ~f:invariant;;
 
+  let is_file_present filename =
+    Sys_unix.file_exists filename
+    |> function
+    | `Yes -> true
+    | _ -> false;;
+
   Sys_unix.chdir "../../..";;
   let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path);
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
     (*assert true*)
     assert_command 
     ~ctxt:ctxt
-    "./_build/default/bin/main.exe" 
+    binary_path
     ["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
     "--out"; "output/emission_sphere_material_test_no_light.ppm"; 
     "--height"; "500"; 
@@ -196,11 +204,13 @@ let sphere_intersect_test _ =
 
 
   let multiple_light_sphere_triangle_reflection_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
     (*assert true*)
     assert_command 
     ~ctxt:ctxt
-    "./_build/default/bin/main.exe" 
+    binary_path
     ["--in"; "example_input/multiple_light_sphere_triangle_reflection.json"; 
     "--out"; "output/multiple_light_sphere_triangle_reflection.ppm"; 
     "--height"; "500"; 
