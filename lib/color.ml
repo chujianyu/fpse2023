@@ -38,8 +38,18 @@ module Color =
       let (r2, g2, b2) = to_tuple c2 in
       make ~r:(r1 *. r2) ~g:(g1 *. g2) ~b:(b1 *. b2)
 
+    let div (c1: t) (c2: t) = 
+      let (r1, g1, b1) = to_tuple c1 in
+      let (r2, g2, b2) = to_tuple c2 in
+      make ~r:(r1 /. r2) ~g:(g1 /. g2) ~b:(b1 /. b2)
+
     let scale (c: t) (s: float) = 
       let (r, g, b) = to_tuple c in
       make ~r:(r *. s) ~g:(g *. s) ~b:(b *. s)
+
+    let greater (c1: t) (c2: t) = 
+      let (r1, g1, b1) = to_tuple c1 in
+      let (r2, g2, b2) = to_tuple c2 in
+      r1 > r2 && g1 > g2 && b1 > b2
 
   end

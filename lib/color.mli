@@ -27,6 +27,9 @@ module Color :
 
     (* component-wise multiplication *)
     val mul : t -> t -> t
+    (* component-wise division *)
+    val div : t -> t -> t
     val scale : t -> float -> t
+    val greater : t -> t -> bool
 
   end

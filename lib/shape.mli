@@ -56,9 +56,5 @@ module type S =
   sig
     type t [@@deriving sexp]
     val item : t 
-    (* val create : Shape_create_params.t -> (t, string) result *)
     val intersect : ray:Ray.t -> Intersection_record.t option
-    (* val normal_at : pos:Vector3f.t -> Vector3f.t *)
-    (* val sexp_of_t : t -> Sexplib0.Sexp.t
-    val t_of_sexp : Sexplib0.Sexp.t -> t *)
   end

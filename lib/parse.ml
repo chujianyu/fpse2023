@@ -31,6 +31,21 @@ let parse_material json =
     transparent = parse_color (member "transparent" json);
   }
 
+(* let parse_vertex json =
+  {
+    Vertex.pos = parse_vector (member "pos" json);
+    normal = parse_vector (member "norm" json)
+  } *)
+(* 
+let parse_triangle json = 
+  let params = {
+    Triangle_params.v0 = parse_vertex (member "v0" json);
+    v1 = parse_vertex (member "v1" json);
+    v2 = parse_vertex (member "v2" json);
+    material = parse_material (member "material" json)}
+  in
+  Triangle.make_triangle params *)
+
 let parse_sphere json = 
   let params = {
     Sphere_params.center = parse_vector (member "center" json);
@@ -41,13 +56,17 @@ let parse_sphere json =
 
 let parse_point_light json = 
   let pos = json |> member "pos" |> parse_vector in
+  let ambient = json |> member "ambient" |> parse_color in
   let diffuse = json |> member "diffuse" |> parse_color in
+  let specular = json |> member "specular" |> parse_color in
   let const_atten = json |> member "constAtten" |> to_float in
   let linear_atten = json |> member "linearAtten" |> to_float in
   let quad_atten = json |> member "quadAtten" |> to_float in
   let params = {
     Point_light_param.pos = pos;
+    ambient = ambient;
     diffuse = diffuse;
+    specular = specular;
     const_atten = const_atten;
     linear_atten = linear_atten;
     quad_atten = quad_atten;} 
@@ -66,6 +85,7 @@ let parse_camera json =
 let parse_scene filename =
   let json = Yojson.Basic.from_file filename in
   let spheres = json |> member "spheres" |> to_list |> List.map parse_sphere in
+  (* let triangles = json |> member "triangles" |> to_list |> List.map parse_triangle in *)
   let point_lights = json |> member "pointLights" |> to_list |> List.map parse_point_light in
   let camera = json |> member "camera" |> parse_camera in
   Scene.create ~shapes:(spheres@[]) ~lights:(point_lights@[]) ~camera
