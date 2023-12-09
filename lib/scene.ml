@@ -132,7 +132,7 @@ let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~
 let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 
   (* Number of cpu cores. Using half of the cores now, as setting it higher
      than what's available can negatively impact performance *)
-  let num_domains = num_cores () / 2 in 
+  let num_domains = max 1 (num_cores () / 2) in 
   print_endline @@ Printf.sprintf "Using %d cores" num_domains;
   let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
   let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~pool) in
