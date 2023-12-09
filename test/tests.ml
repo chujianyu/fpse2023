@@ -54,6 +54,7 @@ let test_from_vector_col _ =
 
 let color_1 = Color.Color.make ~r:6. ~g:6. ~b:6. 
 let color_2 = Color.Color.make ~r:1. ~g:2. ~b:3.
+
 let test_add_col _ = 
   let expected = Color.Color.make ~r:7. ~g:8. ~b:9. in 
   let result = Color.Color.add color_1 color_2 in 
@@ -69,10 +70,21 @@ let test_mul_col _ =
   let result = Color.Color.mul color_1 color_2 in 
   assert_equal result @@ expected
 
+let test_div_col _ = 
+  let expected = Color.Color.make ~r:6. ~g:3. ~b:2. in 
+  let result = Color.Color.mul color_1 color_2 in 
+  assert_equal result @@ expected
+
 let test_scale_col _ = 
   let expected = Color.Color.make ~r:12. ~g:12. ~b:12. in 
   let result = Color.Color.scale color_1 2.0 in 
   assert_equal result @@ expected
+
+let test_greater_col _ =
+  let result = Color.Color.greater color_1 color_2 in
+  assert_bool "greater than" result;
+  let result = not @@ Color.Color.greater color_2 color_1 in
+  assert_bool "less than"  result
 
 
 
@@ -85,66 +97,66 @@ let add_vector _ =
 
 
 
-  let reflect_vector _ = 
-    let one = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:1. ~y:0. ~z:0. in 
-    let two = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:0. ~y:1. ~z:0. in 
-    
-    let expected = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:(-1.0) ~y:0. ~z:0. in
-    let result = Vector.Vector3f.reflect one two in 
-    (*let s = (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t result))  in 
-    let () = Core.Printf.printf "%s" s in*)
-    assert_equal result @@  expected
+let reflect_vector _ = 
+  let one = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:1. ~y:0. ~z:0. in 
+  let two = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:0. ~y:1. ~z:0. in 
+  
+  let expected = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:(-1.0) ~y:0. ~z:0. in
+  let result = Vector.Vector3f.reflect one two in 
+  (*let s = (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t result))  in 
+  let () = Core.Printf.printf "%s" s in*)
+  assert_equal result @@  expected
 
 
 
 
 
 
-    let sphere_intersect_test _ = 
-      let open Vector in
-      let open Ray in 
-      let open Shape in
-      let open Color in
-      let current_sphere_material_params:Material.t = 
-      {ambient=Color.make~r:0.~g:0.~b:0.;
-      specular=Color.make~r:0.~g:0.~b:0.;
-      diffuse=Color.make~r:0.~g:0.~b:0.;
-      emissive=Color.make~r:0.~g:0.~b:0.;
-      transparent=Color.make~r:0.~g:0.~b:0.;
-      shininess=0.0
-      } in
-      let current_sphere_params:Sphere_params.t = {center=(Vector3f.create ~x:3.~y:0.~z:0.);radius=1.;material=current_sphere_material_params} in
-      let ray_one = Ray.create ~orig:(Vector3f.create ~x:0.~y:0.~z:0.) ~dir:(Vector3f.create ~x:1.~y:0.~z:0.) in 
-      let sphere_one = Sphere.make_sphere current_sphere_params in 
-      let module Unpacked_sphere = (val sphere_one : Shape.S) in
-      let expected_pos = Vector3f.create ~x:2. ~y:0. ~z:0. in
-      let result = Unpacked_sphere.intersect ~ray:ray_one in 
-      match result with 
-      |None -> assert false
-      |Some actual_intersect_data -> (
-        let () = Core.Printf.printf "%s" (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t actual_intersect_data.position)) in
-        assert_equal 0 @@  (Vector3f.compare expected_pos actual_intersect_data.position )
-      );;
-      
+let sphere_intersect_test _ = 
+  let open Vector in
+  let open Ray in 
+  let open Shape in
+  let open Color in
+  let current_sphere_material_params:Material.t = 
+  {ambient=Color.make~r:0.~g:0.~b:0.;
+  specular=Color.make~r:0.~g:0.~b:0.;
+  diffuse=Color.make~r:0.~g:0.~b:0.;
+  emissive=Color.make~r:0.~g:0.~b:0.;
+  transparent=Color.make~r:0.~g:0.~b:0.;
+  shininess=0.0
+  } in
+  let current_sphere_params:Sphere_params.t = {center=(Vector3f.create ~x:3.~y:0.~z:0.);radius=1.;material=current_sphere_material_params} in
+  let ray_one = Ray.create ~orig:(Vector3f.create ~x:0.~y:0.~z:0.) ~dir:(Vector3f.create ~x:1.~y:0.~z:0.) in 
+  let sphere_one = Sphere.make_sphere current_sphere_params in 
+  let module Unpacked_sphere = (val sphere_one : Shape.S) in
+  let expected_pos = Vector3f.create ~x:2. ~y:0. ~z:0. in
+  let result = Unpacked_sphere.intersect ~ray:ray_one in 
+  match result with 
+  |None -> assert false
+  |Some actual_intersect_data -> (
+    let () = Core.Printf.printf "%s" (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t actual_intersect_data.position)) in
+    assert_equal 0 @@  (Vector3f.compare expected_pos actual_intersect_data.position )
+  );;
+  
      
 
-Sys_unix.chdir "../../..";;
-let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
-  let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
-(*assert true*)
-assert_command 
-~ctxt:ctxt
-"./_build/default/bin/main.exe" 
-["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
-"--out"; "EMISSION_TEST.ppm"; 
-"--height"; "500"; 
-"--width"; "500"; 
-"--rLimit"; "5"; 
-"--cutOff"; "0.0001"]
-~foutput:(fun seq -> try 
-Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
-with End_of_file ->
-())
+  Sys_unix.chdir "../../..";;
+  let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+  (*assert true*)
+  assert_command 
+  ~ctxt:ctxt
+  "./_build/default/bin/main.exe" 
+  ["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
+  "--out"; "EMISSION_TEST.ppm"; 
+  "--height"; "500"; 
+  "--width"; "500"; 
+  "--rLimit"; "5"; 
+  "--cutOff"; "0.0001"]
+  ~foutput:(fun seq -> try 
+  Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+  with End_of_file ->
+  ())
 
                
 
