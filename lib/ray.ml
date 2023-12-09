@@ -5,7 +5,7 @@ module Ray = struct
   type t = {
     orig : Vector3f.t;
     dir : Vector3f.t;
-  }
+  } [@@deriving sexp]
   
   let create ~orig ~dir =
     { orig; dir }

@@ -136,8 +136,46 @@ let sphere_intersect_test _ =
     let () = Core.Printf.printf "%s" (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t actual_intersect_data.position)) in
     assert_equal 0 @@  (Vector3f.compare expected_pos actual_intersect_data.position )
   );;
-  
-     
+
+  let quick_test_ray_triangle_intersection _ =
+    let open Vector in
+    let open Ray in
+    let open Shape in
+    let open Color in
+    let v0 = Vertex.{pos=(Vector3f.create ~x:(-2.)~y:0.~z:2.); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in
+    let v1 = Vertex.{pos=(Vector3f.create ~x:(2.)~y:0.~z:2.); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in
+    let v2 = Vertex.{pos=(Vector3f.create ~x:(2.)~y:0.~z:(-2.)); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in
+    let material: Material.t = {ambient=Color.make~r:0.~g:0.~b:0.;
+    specular=Color.make~r:0.~g:0.~b:0.;
+    diffuse=Color.make~r:0.~g:0.~b:0.;
+    emissive=Color.make~r:0.~g:0.~b:0.;
+    transparent=Color.make~r:0.~g:0.~b:0.;
+    shininess=0.0
+    } 
+   in
+    let triangle_params = Triangle_params.{v0; v1; v2; material} in
+    let triangle = Triangle.make_triangle triangle_params in
+    let module Unpacked_triangle = (val triangle : Shape.S) in
+     (* custom generator to use appropriate range *)
+  let vector3f_gen =
+    let gen_float = Float.gen_incl (-10.0) 10.0 in
+    Quickcheck.Generator.map3 gen_float gen_float gen_float ~f:(fun x y z -> Vector3f.create ~x ~y ~z)
+  in
+  let ray_gen = 
+    Quickcheck.Generator.map2 vector3f_gen vector3f_gen ~f:(fun orig dir -> Ray.create ~orig ~dir)
+  in
+    let invariant ray =
+      OUnit2.assert_bool "Ray must intersect the triangle within range" @@
+      match Unpacked_triangle.intersect ~ray with
+      | None -> true
+      | Some intersect ->
+          let pos = intersect.position in
+          let (x,y,z) = Vector3f.to_tuple pos in
+          let open Float in
+          print_endline (Core.Sexp.to_string (Vector3f.sexp_of_t pos));
+          x >= -2.1 && x <= 2.1 && y >= -0.1 && y<= 0.1 && z >= -2.1 && z <= 2.1
+    in
+    Quickcheck.test ~sexp_of:[%sexp_of: Ray.t] ray_gen ~f:invariant;;
 
   Sys_unix.chdir "../../..";;
   let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
@@ -216,6 +254,7 @@ let full_image_tests =
   >: test_list
         [
           "sphere_intersect_test">:: sphere_intersect_test;
+          "quick_test_ray_triangle_intersection">:: quick_test_ray_triangle_intersection;
         ]
 
 (* output images placed in output/ folder for inspection *)
