@@ -30,6 +30,7 @@ module Color :
     (* component-wise division *)
     val div : t -> t -> t
     val scale : t -> float -> t
+    (* strictly greater (element-wise) *)
     val greater : t -> t -> bool
 
   end

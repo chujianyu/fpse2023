@@ -26,9 +26,9 @@ module Triangle_params =
   struct
     type t = 
       {
+        v0 : Vertex.t;
         v1 : Vertex.t;
         v2 : Vertex.t;
-        v3 : Vertex.t;
         material : Material.t
       } 
       [@@deriving sexp]
