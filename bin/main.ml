@@ -67,9 +67,16 @@ let command =
         ~doc:"CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
     in
     fun () ->
-      match validate_input_file in_filename, validate_dimensions width height, validate_recursion_limit recursion_limit, validate_cut_off_threshold cut_off_threshold, validate_output_filename out_filename with
-      | Ok (), Ok (), Ok (), Ok (), Ok () -> 
-        main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold
-      | Error (`Msg err), _, _, _, _ | _, Error (`Msg err), _, _, _ | _, _, Error (`Msg err), _, _ | _, _, _, Error (`Msg err), _ | _, _, _, _, Error (`Msg err)  -> eprintf "Error: %s\n" err)
-
+      let validation_results = [
+        validate_input_file in_filename;
+        validate_dimensions width height;
+        validate_recursion_limit recursion_limit;
+        validate_cut_off_threshold cut_off_threshold;
+        validate_output_filename out_filename] 
+      in
+      match List.find ~f:Result.is_error validation_results with
+      | Some (Error (`Msg err)) -> eprintf "Error: %s\n" err
+      | _ ->
+        main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold)
+        
 let () = Command_unix.run ~version:"1.0" ~build_info:"RWO" command
