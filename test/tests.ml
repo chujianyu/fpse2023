@@ -172,7 +172,6 @@ let sphere_intersect_test _ =
           let pos = intersect.position in
           let (x,y,z) = Vector3f.to_tuple pos in
           let open Float in
-          print_endline (Core.Sexp.to_string (Vector3f.sexp_of_t pos));
           x >= -2.1 && x <= 2.1 && y >= -0.1 && y<= 0.1 && z >= -2.1 && z <= 2.1
     in
     Quickcheck.test ~sexp_of:[%sexp_of: Ray.t] ray_gen ~f:invariant;;
