@@ -143,20 +143,38 @@ let sphere_intersect_test _ =
   Sys_unix.chdir "../../..";;
   let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
-  (*assert true*)
-  assert_command 
-  ~ctxt:ctxt
-  "./_build/default/bin/main.exe" 
-  ["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
-  "--out"; "EMISSION_TEST.ppm"; 
-  "--height"; "500"; 
-  "--width"; "500"; 
-  "--rLimit"; "5"; 
-  "--cutOff"; "0.0001"]
-  ~foutput:(fun seq -> try 
-  Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
-  with End_of_file ->
-  ())
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    "./_build/default/bin/main.exe" 
+    ["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
+    "--out"; "output/emission_sphere_material_test_no_light.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ())
+
+
+  let multiple_light_sphere_triangle_reflection_test (ctxt : test_ctxt) =
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    "./_build/default/bin/main.exe" 
+    ["--in"; "example_input/multiple_light_sphere_triangle_reflection.json"; 
+    "--out"; "output/multiple_light_sphere_triangle_reflection.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ())
 
                
 
@@ -192,23 +210,31 @@ let shape_tests =
         [
           "sphere_intersect_test">:: sphere_intersect_test;
         ]
-        let full_image_tests =
-          "full_image_tests"
-          >: test_list
-                [
-                  "sphere_intersect_test">:: sphere_intersect_test;
-                ]
-      
+let full_image_tests =
+  "full_image_tests"
+  >: test_list
+        [
+          "sphere_intersect_test">:: sphere_intersect_test;
+        ]
+
+(* output images placed in output/ folder for inspection *)
+let end_to_end_tests =
+  "end_to_end_tests"
+  >::: [
+    "sphere_emission_material_no_lights_test" >:: sphere_emission_material_no_lights_test;
+    "multiple_light_sphere_triangle_reflection_test" >:: multiple_light_sphere_triangle_reflection_test;
+  ]
+
 let series =
   "raytracer tests"
   >::: [
     vector_tests;
     shape_tests;
     color_tests;
+    full_image_tests; 
+    end_to_end_tests; 
   ]
-
+      
   let () = run_test_tt_main series
-  let () =
-  run_test_tt_main ("foo" >:: sphere_emission_material_no_lights_test)
 
   
