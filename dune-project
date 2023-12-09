@@ -10,13 +10,12 @@
 (authors "Xiaoyu Guo, Amit Rehan, Chujian Yu")
 
 
-(license LICENSE)
 
 (documentation https://url/to/documentation)
 
 (package
  (name fpse2023_raytracer)
  (description "Ocaml Functional Ray Tracer")
- (depends ocaml dune yojson domainslib))
+ (depends (ocaml (>= 5.0.0)) dune yojson domainslib))
 
 ; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project
