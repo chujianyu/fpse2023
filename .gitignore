@@ -31,5 +31,9 @@ temp*
 # Local OPAM switch
 _opam/
 
+# Coverage file
+bisect*.coverage
+
+
 
 .DS_Store
