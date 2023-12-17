@@ -80,7 +80,8 @@ module Scene = struct
           else
             (* Multiplying incident ray.dir by -1 to get outgoing direction *)
             let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
-            let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in 
+            (*let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in *)
+            let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale intersect.normal 0.001)) in 
             let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
             (* cutoff to filter out minimal contribution for early stopping *)
             let cLimit = Color.div cLimit intersect.material.specular in
@@ -92,7 +93,19 @@ module Scene = struct
     
   let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 
     let get_color_at i j =
-      get_color {camera; lights; shapes}  (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
+      
+      let samples = (Core.List.range ~stride:1 ~start:`inclusive
+      ~stop:`inclusive 1 3) in 
+      let multiplier = 1.0/.3.0 in
+      Core.List.fold_left 
+      samples 
+      ~init:Color.empty 
+      ~f:(fun acc num -> (
+        let sample_color = 
+        Color.scale  ( get_color {camera; lights; shapes}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
+        Color.add acc sample_color
+      ))
+     
     in
     let rec stack_rows i acc =
       if i >= height then acc
@@ -118,7 +131,18 @@ to achieve parallelization with immutable data structure. *)
 module T = Domainslib.Task
 let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~pool : Color.t list list = 
   let get_color_at i j =
-    get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
+    (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)*)
+    let samples = (Core.List.range ~stride:1 ~start:`inclusive
+      ~stop:`inclusive 1 3) in 
+      let multiplier = 1.0/.3.0 in
+      Core.List.fold_left 
+      samples 
+      ~init:Color.empty 
+      ~f:(fun acc num -> (
+        let sample_color = 
+        Color.scale  ( get_color {camera; lights; shapes}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
+        Color.add acc sample_color
+      ))
   in
   let colors = Array.make_matrix ~dimx:height ~dimy:width Color.empty in
   T.parallel_for pool ~start:0 ~finish:(height - 1)
