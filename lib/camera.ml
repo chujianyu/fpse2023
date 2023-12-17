@@ -13,9 +13,10 @@ module Camera = struct
 
 
 
-  let get_random_offset (random:bool) = 
+  let get_random_offset (random:bool) =
+    (*let _gen = Core.Random.init  1 in *)
     match random with 
-    |true -> ((0.5+.Core.Random.float 1.0),(0.5+.Core.Random.float 1.0))
+    |true -> (((Core.Random.float_range 0.01 0.99)),((Core.Random.float_range 0.01 0.99)))(*(0.5,0.5)*)
     |false ->  (0.0,0.0)
   let get_ray {height_angle; pos; up; forward} ~(i:int) ~(j:int) ~(width:int) ~(height:int) ~(random:bool) = 
     let i, j, width, height = 
@@ -30,7 +31,8 @@ module Camera = struct
     let bottom_left_pos = forward -: (right_component/:2.) -: (up_component/:2.) in
     let random_offset = get_random_offset(random) in 
     let pixel_pos = 
-      bottom_left_pos +: right_component *: (fst(random_offset) +. 0.5 +.  j) /: width +: up_component *: (snd(random_offset)+.0.5 +.  i) /: height 
+      bottom_left_pos +: right_component *: ((Core.Float.clamp_exn (fst(random_offset) +. 0.0) ~min:0.01 ~max:0.999)  
+      +.  j) /: width +: up_component *: ((Core.Float.clamp_exn (snd(random_offset) +. 0.0) ~min:0.01 ~max:0.999) +.  i) /: height 
     in
     Ray.create ~orig:pos ~dir:pixel_pos
 end

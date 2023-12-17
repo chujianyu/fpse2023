@@ -1,5 +1,6 @@
 [@@@warning "-69-27-33-39-32"]
 
+(*https://raytracing.github.io/books/RayTracingInOneWeekend.html*)
 open Ray
 open Vector
 
@@ -68,7 +69,19 @@ module Scene = struct
   | 0 -> Color.empty
   | _ ->
     match get_first_intersection ray shapes with
-    | None -> Color.empty
+    | None -> (*Color.empty*)
+    (
+      let direction = Ray.get_dir ray in 
+      let dir_unit = Vector3f.normalize direction in 
+      let y_comp = Vector3f.to_tuple dir_unit in 
+      match y_comp with 
+      | (x,y,z) -> (
+        let a = 0.5*.(y +. 1.0) in 
+        Color.add (Color.scale (Color.make ~r:1.0 ~g:1.0 ~b:1.0 ) (1.0-.a))
+        (Color.scale (Color.make ~r:0.5 ~g:0.7 ~b:1.0 ) (a))
+      )
+  
+    )
     | Some intersect -> 
       let emissive = intersect.material.emissive in
       let light_contribution = get_light_contribution ray lights intersect in
@@ -137,6 +150,7 @@ let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~
       let multiplier = 1.0/.3.0 in
       Core.List.fold_left 
       samples 
+
       ~init:Color.empty 
       ~f:(fun acc num -> (
         let sample_color = 
