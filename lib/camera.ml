@@ -14,9 +14,12 @@ module Camera = struct
 
 
   let get_random_offset (random:bool) =
+    let my_state = Random.State.make_self_init () in
     (*let _gen = Core.Random.init  1 in *)
+    
     match random with 
-    |true -> (((Core.Random.float_range 0.01 0.99)),((Core.Random.float_range 0.01 0.99)))(*(0.5,0.5)*)
+    |true -> (Random.State.float my_state 1.0,Random.State.float my_state 1.0)
+     
     |false ->  (0.0,0.0)
   let get_ray {height_angle; pos; up; forward} ~(i:int) ~(j:int) ~(width:int) ~(height:int) ~(random:bool) = 
     let i, j, width, height = 
