@@ -122,7 +122,8 @@ let sphere_intersect_test _ =
   diffuse=Color.make~r:0.~g:0.~b:0.;
   emissive=Color.make~r:0.~g:0.~b:0.;
   transparent=Color.make~r:0.~g:0.~b:0.;
-  shininess=0.0
+  shininess=0.0;
+  ir=1.05;
   } in
   let current_sphere_params:Sphere_params.t = {center=(Vector3f.create ~x:3.~y:0.~z:0.);radius=1.;material=current_sphere_material_params} in
   let ray_one = Ray.create ~orig:(Vector3f.create ~x:0.~y:0.~z:0.) ~dir:(Vector3f.create ~x:1.~y:0.~z:0.) in 
@@ -150,7 +151,8 @@ let sphere_intersect_test _ =
     diffuse=Color.make~r:0.~g:0.~b:0.;
     emissive=Color.make~r:0.~g:0.~b:0.;
     transparent=Color.make~r:0.~g:0.~b:0.;
-    shininess=0.0
+    shininess=0.0;
+    ir=1.05;
     } 
    in
     let triangle_params = Triangle_params.{v0; v1; v2; material} in

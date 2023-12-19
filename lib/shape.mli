@@ -4,7 +4,7 @@ open Color
 
 (* Material module. Represents the material of a shape *)
 module Material : sig
-  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float} 
+  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float; ir : float} 
   (* [@@deriving sexp] *)
 end
 

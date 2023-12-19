@@ -29,6 +29,7 @@ let parse_material json =
     specular = parse_color (member "specular" json);
     emissive = parse_color (member "emissive" json);
     transparent = parse_color (member "transparent" json);
+    ir = member "ir" json |> to_float;
   }
 
 let parse_vertex json =

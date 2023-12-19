@@ -45,6 +45,27 @@ module Scene = struct
 
   
 
+    let refract ray_dir normal ir =
+      let open Float in
+      let reverse_ray_dir = Vector3f.scale ray_dir (-1.0) in
+      let dot = Vector3f.dot reverse_ray_dir normal in
+      let ir = if Float.(>) dot 0. then 1.0/.ir else ir in
+      let in_cos = Float.min 1.0 @@ Float.abs dot in
+      let in_sin = Float.sqrt @@ 1. -. in_cos *. in_cos in  
+      let out_sin = in_sin *. ir in
+      if out_sin > 1. then None
+      else 
+        let out_cos = Float.sqrt @@ 1. -. out_sin *. out_sin in
+        let first_component = Vector3f.scale normal (ir *. in_cos -. out_cos) in
+        let second_component = 
+          if dot >= 0. then Vector3f.scale ray_dir ir 
+          else Vector3f.scale reverse_ray_dir ir
+        in
+        if dot >= 0. then Some (Vector3f.add first_component second_component)
+        else Some (Vector3f.scale (Vector3f.add first_component second_component) (-1.))
+  
+        
+  
 
   let get_first_intersection ray shapes =
     let get_closer_intersection (closer:Intersection_record.t option) (new_intersection:Intersection_record.t option) = 
@@ -100,8 +121,19 @@ module Scene = struct
             let cLimit = Color.div cLimit intersect.material.specular in
             Color.scale (Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.specular)) (1.0) 
       in
-      (* TODO: let refract_contrib = ... *)
-      let color_contributions = [emissive; light_contribution; reflection_contribution] in
+      let refraction_contribution = 
+        if not @@ Color.greater intersect.material.transparent cLimit then Color.empty
+        else 
+          match refract (Ray.get_dir ray) intersect.normal intersect.material.ir with
+          | None -> Color.empty
+          | Some refract_dir -> 
+            let refract_pos = (Vector3f.add (intersect.position)  (Vector3f.scale refract_dir 0.00000001)) in 
+            let refract_ray = Ray.create ~orig:refract_pos ~dir:refract_dir in
+            let cLimit = Color.div cLimit intersect.material.transparent in
+            Color.scale (Color.mul (get_color {camera; lights; shapes} refract_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)) (1.0)
+      in
+
+      let color_contributions = [emissive; light_contribution; reflection_contribution; refraction_contribution] in
       List.fold ~f:Color.add ~init:Color.empty color_contributions
     
   let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 

@@ -5,7 +5,7 @@ open Color
 open Sexplib.Std
 
 module Material = struct 
-  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float} 
+  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float; ir:float} 
   [@@deriving sexp]
 end
 module Intersection_record = struct
