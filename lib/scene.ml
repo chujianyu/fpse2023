@@ -76,8 +76,6 @@ let get_first_intersection ray shapes =
   in
   List.fold shapes ~init:None ~f:f_keep_closest
 
-  (* TODO: remove unused params *)
-  (*  let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = *)
 let rec get_color {camera; lights; shapes; sky_enabled} ray ~i ~j ~rLimit ~(cLimit:Color.t) = 
 match rLimit with 
 | 0 -> Color.empty

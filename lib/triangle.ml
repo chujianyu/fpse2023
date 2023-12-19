@@ -33,7 +33,7 @@ let make_triangle (p : Triangle_params.t) = (module struct
   else 
     let inv_det = 1.0 /. det in
     let tvec = (Ray.get_orig ray) -: item.v0.pos in
-    let u = dot tvec pvec *. inv_det in
+    let u = dot tvec pvec *. inv_det in (* Barycentric coordinate u *)
     if u < 0.0 || u > 1.0 then None
     else
       let qvec = cross tvec edge1 in
