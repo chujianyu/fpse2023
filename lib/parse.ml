@@ -30,7 +30,7 @@ let parse_material json =
     specular = parse_color (member "specular" json);
     emissive = parse_color (member "emissive" json);
     transparent = parse_color (member "transparent" json);
-    ir = member "ir" json |> to_float;
+    ir = member "ir" json |> to_float_option |> Option.value ~default:1.0;
   }
 
 let parse_vertex json =
@@ -75,6 +75,21 @@ let parse_point_light json =
   in
   Point_light.make_point_light params
 
+let parse_directional_light json =
+  let dir = json |> member "dir" |> parse_vector in
+  let ambient = json |> member "ambient" |> parse_color in
+  let diffuse = json |> member "diffuse" |> parse_color in
+  let specular = json |> member "specular" |> parse_color in
+  let params = {
+    Directional_light_param.dir = dir;
+    ambient = ambient;
+    diffuse = diffuse;
+    specular = specular;
+  }
+  in
+  Directional_light.make_directional_light params
+
+
 let parse_camera json = 
   let height_angle = json |> member "heightAngle" |> to_float in
   let pos = json |> member "origin" |> parse_vector in
@@ -93,8 +108,9 @@ let parse_scene filename =
   let spheres = json |> member "spheres" |> to_list |> List.map ~f:parse_sphere in
   let triangles = json |> member "triangles" |> to_list |> List.map ~f:parse_triangle in
   let point_lights = json |> member "pointLights" |> to_list |> List.map ~f:parse_point_light in
+  let directional_lights = json |> member "directionalLights" |> to_list |> List.map ~f:parse_directional_light in
   let camera = json |> member "camera" |> parse_camera in
   let sky_enabled = json |> parse_sky_enabled |> Option.value ~default:false in
-  Scene.create ~shapes:(spheres@triangles) ~lights:(point_lights@[]) ~camera ~sky_enabled
+  Scene.create ~shapes:(spheres@triangles) ~lights:(point_lights@directional_lights) ~camera ~sky_enabled
 
 end

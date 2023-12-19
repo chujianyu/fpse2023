@@ -11,6 +11,11 @@ module Point_light_param = struct
    [@@deriving sexp]
 end
 
+module Directional_light_param = struct
+  type t = {dir:Vector3f.t; ambient:Color.t; diffuse:Color.t; specular:Color.t}
+   [@@deriving sexp]
+end
+
 module type L = sig
   type t [@@deriving sexp]
   val item : t
