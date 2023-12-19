@@ -1,4 +1,5 @@
 {
+	"skyEnabled": true,
 	"spheres": [
 		{
 			"center": [1.25, 2.5 ,0.0],
@@ -9,7 +10,7 @@
                 "diffuse": [0.7, 0.55, 0.6],
                 "specular": [0.7, 0.55, 0.6],
 				"emissive": [0.0, 0.0, 0.0],
-				"transparent": [1.0,1.0,1.0],
+				"transparent": [0.0,0.0,0.0],
 				"ir": 1.0
             }
 		},
@@ -22,7 +23,7 @@
                 "diffuse":  [0.4, 0.55, 0.4],
                 "specular":  [0.4, 0.55, 0.4],
 				"emissive": [0.0,0.0,0.0],
-				"transparent": [0.7, 0.55, 0.6],
+				"transparent": [0.0, 0.0, 0.0],
 				"ir": 1.0
             }
 		},
@@ -35,7 +36,7 @@
                 "diffuse":  [0.4, 0.55, 0.4],
                 "specular":  [0.4, 0.55, 0.4],
 				"emissive": [0.0, 0.0, 0.0],
-				"transparent": [0.7, 0.55, 0.6],
+				"transparent": [0.0, 0.0, 0.0],
 				"ir": 1.0
             }
 		},
@@ -48,7 +49,7 @@
                 "diffuse":  [0.0, 0.4, 0.4],
                 "specular":  [0.0, 0.4, 0.4],
 				"emissive": [0.0, 0.0, 0.0],
-				"transparent": [0.7, 0.55, 0.6],
+				"transparent": [0.0, 0.0, 0.0],
 				"ir": 1.0
             }
 		}
