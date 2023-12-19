@@ -69,6 +69,7 @@
 			"quadAtten": 0.001
 		}
 	],
+	"directionalLights": [],
 	"camera":
 	{
 		"origin": [0.0, 1.0, 10.0],
