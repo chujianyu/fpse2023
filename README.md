@@ -38,8 +38,8 @@ with
  (pps ppx_jane ))
 ```
 
-# Usage:
-
+## Example Usage:
+Display Help:
 ```
 ./_build/default/bin/main.exe  --help
 ```
