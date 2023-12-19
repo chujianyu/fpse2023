@@ -145,7 +145,6 @@ let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLim
       Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
       Color.add acc sample_color
     ))
-    
   in
   let rec stack_rows i acc =
     if i >= height then acc
@@ -153,26 +152,31 @@ let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLim
   in
   stack_rows 0 []
 
-(* A parallelization attempt with arrays; This is the only mutation happening during ray tracing; 
-we will change to use list with chunking and combining them 
-to achieve parallelization with immutable data structure. *)
+(* Parallelism with immutable lists. Because list has no random access, we chunk the lists to process
+   each part, and join the results from each parallel task at the end.  *)
 module T = Domainslib.Task
 
 let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~num_domains ~pool =
 
+  (* Function to get the color of a single pixel at (i, j).
+     Uses the camera to shoot a ray through the pixel
+     and then calculates the color *)
   let get_color_at i j =
-    get_color {camera; lights; shapes; sky_enabled} (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
+    get_color {camera; lights; shapes; sky_enabled} 
+    (Camera.get_ray camera ~i ~j ~width ~height ~random:true) 
+    ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
   in
-  (* Function to process a chunk of rows *)
+  (* Function to get the pixel colors for a chunk of rows *)
   let process_chunk (start_row, end_row) =
     let rec stack_rows i acc =
       if i >= end_row then acc
+      (* (List.init width ~f:(fun j -> get_color_at i j) returns an entire row 
+      of (mapped) colors, which is then prepended to acc. *)
       else stack_rows (i + 1) (List.init width ~f:(fun j -> get_color_at i j) :: acc)
     in
     stack_rows start_row []
   in
-
-  (* Splitting the image into chunks *)
+  (* split the image into chunks according to number of domains *)
   let chunk_size = (height + num_domains - 1) / num_domains in
   let rec create_chunks start_row =
     if start_row >= height then []
@@ -180,8 +184,7 @@ let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLi
          (start_row, end_row) :: create_chunks end_row
   in
   let chunks = List.rev @@ create_chunks 0 in
-
-  (* Process each chunk in parallel and concatenate the results *)
+  (* Process each chunk in parallel and concatenate the results to get output 2d list *)
     let tasks = List.map ~f:(fun chunk -> T.async pool (fun () -> process_chunk chunk)) chunks in
     let all_rows = List.concat (List.map ~f:(T.await pool) tasks) in
     all_rows
