@@ -1,7 +1,5 @@
 (* module Sphere and Shape.S may be used to create first-class modules*)
-open Ray
 open Vector
-open Color
 open Sexplib.Std
 
 module Material = struct 

@@ -1,6 +1,4 @@
-open Ray
 open Vector
-open Color
 
 (* Material module. Represents the material of a shape *)
 module Material : sig

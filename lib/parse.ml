@@ -4,13 +4,10 @@ open Vector
 open Yojson.Basic.Util
 open Shape
 open Light
-open Scene
-open Color
-open Camera
 open Core
 
 (* Module to parse parse the input json file as given in example_input/ *)
-module Parse = struct
+
 
 let parse_color json =
   match json with
@@ -113,4 +110,3 @@ let parse_scene filename =
   let sky_enabled = json |> parse_sky_enabled |> Option.value ~default:false in
   Scene.create ~shapes:(spheres@triangles) ~lights:(point_lights@directional_lights) ~camera ~sky_enabled
 
-end
