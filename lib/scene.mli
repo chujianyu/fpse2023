@@ -20,5 +20,6 @@ val create : camera:Camera.t -> lights:(module L) list -> shapes:(module S) list
     and thus kept separate from the property of the 3D scene. *)
 val get_color : t -> Ray.t -> i:int -> j:int -> rLimit:int -> cLimit:Color.t -> Color.t
 
-(* Performs ray tracing on the entire scene *)
-val ray_trace : t -> width:int -> height:int -> rLimit:int -> cLimit:float -> Color.t list list
+(* Performs ray tracing on the entire scene
+   Optional argument num_domains for parallelism, listed as the first argument to avoid being unerasable *)
+val ray_trace : ?num_domains:int -> t -> width:int -> height:int -> rLimit:int -> cLimit:float ->  Color.t list list

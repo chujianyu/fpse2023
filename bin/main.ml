@@ -6,9 +6,9 @@ open Parse
 open Scene
 open Output
 
-let timed_ray_trace scene ~width ~height ~rLimit ~cLimit = 
+let timed_ray_trace scene ~width ~height ~rLimit ~cLimit ~num_domains = 
   let start_time = Time_float.now () in
-  let img = Scene.ray_trace scene ~width ~height ~rLimit ~cLimit in
+  let img = Scene.ray_trace scene ~num_domains ~width ~height ~rLimit ~cLimit in
   let end_time = Time_float.now () in
   let duration = Time_float.diff end_time start_time in
   Printf.printf "Ray tracing completed in: %f seconds\n" (Time_float.Span.to_sec duration);
@@ -21,11 +21,20 @@ let timed_write_file img ~width ~height ~out_filename =
   let duration = Time_float.diff end_time start_time in 
   Printf.printf "Writing output to file completed in: %f seconds\n" (Time_float.Span.to_sec duration)
 
-let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit =
+let num_cores () =
+  let command = "getconf _NPROCESSORS_ONLN" in
+  let in_channel = Caml_unix.open_process_in command in
+  let line = In_channel.input_line in_channel in
+  In_channel.close in_channel;
+  match line with
+  | Some n -> Int.of_string n
+  | None -> 1
+    
+
+let main ~in_filename ~out_filename ~width ~height ~rLimit ~cLimit ~num_domains =
   in_filename
   |> Parse.parse_scene
-  |> timed_ray_trace ~width ~height ~rLimit ~cLimit
-  (*|> Output.output_rgb_data_to_file ~width ~height ~out_filename*)
+  |> timed_ray_trace ~width ~height ~rLimit ~cLimit ~num_domains
   |> timed_write_file ~width ~height ~out_filename
   
 let validate_input_file filename =
@@ -54,6 +63,12 @@ let validate_cut_off_threshold threshold =
   if threshold > 0.0 && threshold <= 1.0 then Ok ()
   else Error (`Msg "CUTOFF THRESHOLD must be between 0 and 1")
 
+let validate_domains domains =
+  if domains < 0 then Error (`Msg "DOMAINS must be positive")
+  else if domains > num_cores () then Error (`Msg ("DOMAINS must be less than or equal to the number of cores: "^string_of_int (num_cores ())))
+  else Ok ()
+  
+
 let command =
   Command.basic
     ~summary:"OCaml Ray Tracer"
@@ -65,6 +80,8 @@ let command =
       and recursion_limit = flag "--rLimit" (optional_with_default 5 int) ~doc:"RECURSION DEPTH LIMIT (default 5)"
       and cut_off_threshold = flag "--cutOff" (optional_with_default 0.0001 float) 
         ~doc:"CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
+      and num_domains = flag "--domains" (optional_with_default 1 int)
+        ~doc:"NUMBER OF DOMAINS for Parallelism (default 1)"
     in
     fun () ->
       let validation_results = [
@@ -72,11 +89,12 @@ let command =
         validate_dimensions width height;
         validate_recursion_limit recursion_limit;
         validate_cut_off_threshold cut_off_threshold;
-        validate_output_filename out_filename] 
+        validate_output_filename out_filename;
+        validate_domains num_domains] 
       in
       match List.find ~f:Result.is_error validation_results with
       | Some (Error (`Msg err)) -> eprintf "Error: %s\n" err
       | _ ->
-        main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold)
+        main ~in_filename ~out_filename ~width ~height ~rLimit:recursion_limit ~cLimit:cut_off_threshold ~num_domains)
         
 let () = Command_unix.run ~version:"1.0" ~build_info:"RWO" command

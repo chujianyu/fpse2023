@@ -154,18 +154,6 @@ let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLim
   in
   stack_rows 0 []
 
-
-
-
-let num_cores () =
-let command = "getconf _NPROCESSORS_ONLN" in
-let in_channel = Caml_unix.open_process_in command in
-let line = In_channel.input_line in_channel in
-In_channel.close in_channel;
-match line with
-| Some n -> Int.of_string n
-| None -> 1
-
 (* A parallelization attempt with arrays; This is the only mutation happening during ray tracing; 
 we will change to use list with chunking and combining them 
 to achieve parallelization with immutable data structure. *)
@@ -195,13 +183,38 @@ T.parallel_for pool ~start:0 ~finish:(height - 1)
   );
 Array.to_list (Array.map ~f:Array.to_list colors)
 
-let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
-(* Number of cpu cores. Using half of the cores now, as setting it higher
-    than what's available can negatively impact performance *)
-let num_domains = max 1 (num_cores () / 2) in 
-print_endline @@ Printf.sprintf "Using %d cores" num_domains;
+let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~num_domains ~pool =
+
+  let get_color_at i j =
+    get_color {camera; lights; shapes; sky_enabled} (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
+  in
+  (* Function to process a chunk of rows *)
+  let process_chunk (start_row, end_row) =
+    let rec stack_rows i acc =
+      if i >= end_row then acc
+      else stack_rows (i + 1) (List.init width ~f:(fun j -> get_color_at i j) :: acc)
+    in
+    stack_rows start_row []
+  in
+
+  (* Splitting the image into chunks *)
+  let chunk_size = (height + num_domains - 1) / num_domains in
+  let rec create_chunks start_row =
+    if start_row >= height then []
+    else let end_row = min height (start_row + chunk_size) in
+         (start_row, end_row) :: create_chunks end_row
+  in
+  let chunks = List.rev @@ create_chunks 0 in
+
+  (* Process each chunk in parallel and concatenate the results *)
+    let tasks = List.map ~f:(fun chunk -> T.async pool (fun () -> process_chunk chunk)) chunks in
+    let all_rows = List.concat (List.map ~f:(T.await pool) tasks) in
+    all_rows
+
+let ray_trace ?(num_domains=1) {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
+print_endline @@ Printf.sprintf "Using %d domain(s)" num_domains;
 let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
-let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool) in
+let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool ~num_domains) in
 T.teardown_pool pool;
 result
 
