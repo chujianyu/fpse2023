@@ -7,9 +7,9 @@ module Material : sig
 end
 
 (* Intersection_record module. Represents the information about a ray-shape intersection *)
-module Intersection_record : sig
+module Intersection : sig
   type t = {intersection_time: float; position: Vector3f.t; normal: Vector3f.t; material : Material.t} 
-  (* [@@deriving sexp] *)
+  [@@deriving sexp]
 end
 
 (* Vertex module. Represents the vertex of a shape, e.g. of triangles *)
@@ -28,5 +28,5 @@ module type S =
   sig
     type t [@@deriving sexp]
     val item : t 
-    val intersect : ray:Ray.t -> Intersection_record.t option
+    val intersect : ray:Ray.t -> Intersection.t option
   end

@@ -1,6 +1,3 @@
-
-
-(*https://raytracing.github.io/books/RayTracingInOneWeekend.html*)
 open Vector
 open Light
 open Shape
@@ -24,11 +21,9 @@ let to_string scene =
   Printf.sprintf "Scene:\nLights:\n%s\nShapes:\n%s\nCamera:\n%s\n" lights_str shapes_str camera_str
 
 let create ~camera ~lights ~shapes ~sky_enabled= 
-  let scene = {camera; lights; shapes; sky_enabled} in
-  print_endline @@ to_string scene;
-  scene
+    {camera; lights; shapes; sky_enabled}
 
-let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection_record.t) ~shapes ~cLimit : Color.t = 
+let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection.t) ~shapes ~cLimit : Color.t = 
   let f_accumulate acc light_module =
     let module Cur_light = (val light_module : L) in  
     let ambient = Color.mul (Cur_light.get_ambient ray position normal material) material.ambient in
@@ -61,7 +56,7 @@ let refract ray_dir normal ir =
     else Some (Vector3f.scale (Vector3f.add first_component second_component) (-1.))
 
 let get_first_intersection ray shapes =
-  let get_closer_intersection (closer:Intersection_record.t option) (new_intersection:Intersection_record.t option) = 
+  let get_closer_intersection (closer:Intersection.t option) (new_intersection:Intersection.t option) = 
     match closer, new_intersection with
     | None, None -> None
     | None, Some _ -> new_intersection
@@ -76,7 +71,8 @@ let get_first_intersection ray shapes =
   in
   List.fold shapes ~init:None ~f:f_keep_closest
 
-let rec get_color {camera; lights; shapes; sky_enabled} ray ~i ~j ~rLimit ~(cLimit:Color.t) = 
+  (* Recursive function to get color given a ray, accumulating color contributions *)
+let rec get_color {camera; lights; shapes; sky_enabled} ray ~rLimit ~(cLimit:Color.t) = 
 match rLimit with 
 | 0 -> Color.empty
 | _ ->
@@ -109,7 +105,7 @@ match rLimit with
           let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
           (* cutoff to filter out minimal contribution for early stopping *)
           let cLimit = Color.div cLimit intersect.material.specular in
-          Color.scale (Color.mul (get_color {camera; lights; shapes; sky_enabled} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.specular)) (1.0) 
+          Color.mul (get_color {camera; lights; shapes; sky_enabled} reflect_ray ~rLimit:(rLimit-1) ~cLimit) (intersect.material.specular)
     in
     let refraction_contribution = 
       if not @@ Color.greater intersect.material.transparent cLimit then Color.empty
@@ -120,26 +116,35 @@ match rLimit with
           let refract_pos = (Vector3f.add (intersect.position)  (Vector3f.scale refract_dir epsilon)) in 
           let refract_ray = Ray.create ~orig:refract_pos ~dir:refract_dir in
           let cLimit = Color.div cLimit intersect.material.transparent in
-          Color.scale (Color.mul (get_color {camera; lights; shapes; sky_enabled} refract_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)) (1.0)
+          Color.mul (get_color {camera; lights; shapes; sky_enabled} refract_ray ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)
     in
 
     let color_contributions = [emissive; light_contribution; reflection_contribution; refraction_contribution] in
     List.fold ~f:Color.add ~init:Color.empty color_contributions
-  
-(* Ray trace without parallelism for demonstration purposes *)
-let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
-  let get_color_at i j =
-    let samples = (Core.List.range ~stride:1 ~start:`inclusive
-    ~stop:`inclusive 1 3) in 
-    let multiplier = 1.0/.3.0 in
+
+(*Helper function for anti-aliasing. Used by ray_trace and ray_trace_parallel *)
+let get_color_anti_alias {camera; lights; shapes; sky_enabled} ~i ~j ~width ~height ~num_samples ~rLimit ~cLimit  =
+  let samples = (Core.List.range ~stride:1 ~start:`inclusive
+    ~stop:`inclusive 1 num_samples) in 
+    let multiplier = 1.0/.(Float.of_int num_samples) in
     Core.List.fold_left 
     samples 
     ~init:Color.empty 
     ~f:(fun acc _ -> (
       let sample_color = 
-      Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
-      Color.add acc sample_color
+      Color.scale 
+      (get_color {camera; lights; shapes; sky_enabled} (Camera.get_ray camera ~i ~j ~width ~height ~random:true) 
+      ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)) 
+      multiplier 
+    in 
+    Color.add acc sample_color
     ))
+  
+(* The main Ray trace function (without parallelism for demonstration purposes) *)
+let ray_trace_single_thread {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
+  let num_samples = 3 in
+  let get_color_at i j = 
+    get_color_anti_alias {camera; lights; shapes; sky_enabled} ~i ~j ~width ~height ~num_samples ~rLimit ~cLimit
   in
   let rec stack_rows i acc =
     if i >= height then acc
@@ -147,19 +152,14 @@ let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLim
   in
   stack_rows 0 []
 
+
+module T = Domainslib.Task
 (* Parallelism with immutable lists. Because list has no random access, we chunk the lists to process
    each part, and join the results from each parallel task at the end.  *)
-module T = Domainslib.Task
-
 let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~num_domains ~pool =
-
-  (* Function to get the color of a single pixel at (i, j).
-     Uses the camera to shoot a ray through the pixel
-     and then calculates the color *)
-  let get_color_at i j =
-    get_color {camera; lights; shapes; sky_enabled} 
-    (Camera.get_ray camera ~i ~j ~width ~height ~random:true) 
-    ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)
+  let num_samples = 3 in
+  let get_color_at i j = 
+    get_color_anti_alias {camera; lights; shapes; sky_enabled} ~i ~j ~width ~height ~num_samples ~rLimit ~cLimit
   in
   (* Function to get the pixel colors for a chunk of rows *)
   let process_chunk (start_row, end_row) =
@@ -187,7 +187,7 @@ let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLi
 let ray_trace ?(num_domains=1) {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
   print_endline @@ Printf.sprintf "Using %d domain(s)" num_domains;
   (* Could just use ray trace parallel with num_domains = 1, but keeping this for demonstration purposes and comparison *)
-  if num_domains = 1 then ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit
+  if num_domains = 1 then ray_trace_single_thread {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit
   else
     let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
     let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool ~num_domains) in

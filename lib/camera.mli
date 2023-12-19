@@ -1,6 +1,4 @@
-[@@@warning "-69-27-33-32"]
 open Vector
-open Ray
 
 (* Module that represents a camera in the scene *)
 

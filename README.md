@@ -17,11 +17,30 @@ To test the binary (test output images will be placed at output/ folder):
 dune test
 ```
 
+# Notes about running tests
 Please note that that "dune test" requires a built binary from running "dune build" first.
 
 
-Example usage:
+## Notes about Parallelism
+Please note that to properly compare the time to ray trace with and without parallelism,
+bisect_ppx may need to be removed from lib/dune, as it was found to interfere with the multi-threading process
+while occupying unusually high CPU resources.
+To remove bisect_ppx in lib/dune, replace the line
+``` (preprocess
+ (pps ppx_jane bisect_ppx))``` with ``` (preprocess
+ (pps ppx_jane ))```
+
+## Example usage:
+
 ```
-./_build/default/bin/main.exe --in example_input/input1.json --out output/output_test.ppm --height 500 --width 500 --rLimit 5 --cutOff 0.0001
+./_build/default/bin/main.exe  --help
 ```
 
+Run without multi-threading:
+```
+./_build/default/bin/main.exe  --out output/demo_output.ppm --height 1000 --width 1000 --in example_input/reflection_and_refraction.json --domains 1
+```
+
+Run with multi-threading (2 threads):
+```./_build/default/bin/main.exe  --out output/demo_output.ppm --height 1000 --width 1000 --in example_input/reflection_and_refraction.json --domains 2
+```

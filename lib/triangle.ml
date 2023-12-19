@@ -1,6 +1,4 @@
-[@@@warning "-69-27-33"]
 open Vector
-open Ray
 open Shape
 open Core
 
@@ -21,7 +19,7 @@ let epsilon = 0.00001
 let make_triangle (p : Triangle_params.t) = (module struct
  type t = Triangle_params.t  [@@deriving sexp]
  let item = p
- let intersect ~(ray:Ray.t) : Intersection_record.t option = 
+ let intersect ~(ray:Ray.t) : Intersection.t option = 
   let open Float in
   let open Vector3f in
   let edge1 = item.v1.pos -: item.v0.pos in

@@ -1,5 +1,3 @@
-[@@@warning "-69-27"]
-
 open Vector
 
 type t = {

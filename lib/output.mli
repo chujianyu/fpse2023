@@ -1,4 +1,3 @@
-[@@@warning "-69-27-33"]
 (* Module to write an RGB file given lists of lists of Color.t *)
 
 (* writes an .ppm file given the out_filename and 2d list of colors*)

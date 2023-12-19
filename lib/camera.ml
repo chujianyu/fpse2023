@@ -1,8 +1,5 @@
-[@@@warning "-69-27-33-32"]
 open Vector
-open Ray
 open Core
-
 
 type t = {height_angle : float; pos : Vector3f.t; up : Vector3f.t; forward : Vector3f.t} [@@deriving sexp, fields ~getters]
 
@@ -10,17 +7,12 @@ let create ~height_angle ~pos ~up ~forward = {height_angle; pos; up; forward}
 
 let get_right camera = Vector3f.cross camera.forward camera.up
 
-
-
-
 let get_random_offset (random:bool) =
   let my_state = Random.State.make_self_init () in
-  (*let _gen = Core.Random.init  1 in *)
-  
   match random with 
   |true -> (Random.State.float my_state 1.0,Random.State.float my_state 1.0)
-    
   |false ->  (0.0,0.0)
+
 let get_ray {height_angle; pos; up; forward} ~(i:int) ~(j:int) ~(width:int) ~(height:int) ~(random:bool) = 
   let i, j, width, height = 
     float_of_int i, float_of_int j, float_of_int width, float_of_int height 

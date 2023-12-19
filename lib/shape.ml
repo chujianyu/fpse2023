@@ -6,7 +6,7 @@ module Material = struct
   type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float; ir:float} 
   [@@deriving sexp]
 end
-module Intersection_record = struct
+module Intersection = struct
   type t = {intersection_time: float; position: Vector3f.t; normal: Vector3f.t; material : Material.t} 
   [@@deriving sexp]
 end
@@ -16,41 +16,12 @@ module Vertex =
       {
         pos : Vector3f.t;
         normal : Vector3f.t;
-      } 
-      [@@deriving sexp]
+      } [@@deriving sexp]
   end
-
-module Triangle_params =
-  struct
-    type t = 
-      {
-        v0 : Vertex.t;
-        v1 : Vertex.t;
-        v2 : Vertex.t;
-        material : Material.t
-      } 
-      [@@deriving sexp]
-  end
-
-
-module Sphere_params = struct
-  type t =
-    {
-      center : Vector3f.t;
-      radius : float;
-      material : Material.t
-    } 
-    [@@deriving sexp]
-end 
-
 
 module type S = 
   sig
     type t  [@@deriving sexp]
     val item : t 
-    (* val create : Shape_create_params.t -> (t, string) result *)
-    val intersect : ray:Ray.t -> Intersection_record.t option
-    (* val normal_at : pos:Vector3f.t -> Vector3f.t *)
-    (* val sexp_of_t : t -> Sexplib0.Sexp.t
-    val t_of_sexp : Sexplib0.Sexp.t -> t *)
+    val intersect : ray:Ray.t -> Intersection.t option
   end

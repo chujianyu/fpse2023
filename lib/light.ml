@@ -1,20 +1,5 @@
-[@@@warning "-69-27-33"]
-
-open Ray
 open Vector
-open Color
 open Shape
-open Sexplib.Std
-
-module Point_light_param = struct
-  type t = {pos:Vector3f.t; ambient:Color.t; diffuse:Color.t; specular:Color.t; const_atten:float; linear_atten:float; quad_atten:float}
-   [@@deriving sexp]
-end
-
-module Directional_light_param = struct
-  type t = {dir:Vector3f.t; ambient:Color.t; diffuse:Color.t; specular:Color.t}
-   [@@deriving sexp]
-end
 
 module type L = sig
   type t [@@deriving sexp]

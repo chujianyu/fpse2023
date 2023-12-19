@@ -1,9 +1,7 @@
 
-[@@@warning "-69-27-33-32"]
 open Vector
 open Yojson.Basic.Util
 open Shape
-open Light
 open Core
 
 (* Module to parse parse the input json file as given in example_input/ *)
@@ -56,6 +54,7 @@ let parse_sphere json =
   Sphere.make_sphere params
 
 let parse_point_light json = 
+  let open Point_light in
   let pos = json |> member "pos" |> parse_vector in
   let ambient = json |> member "ambient" |> parse_color in
   let diffuse = json |> member "diffuse" |> parse_color in
@@ -75,6 +74,7 @@ let parse_point_light json =
   Point_light.make_point_light params
 
 let parse_directional_light json =
+  let open Directional_light in
   let dir = json |> member "dir" |> parse_vector in
   let ambient = json |> member "ambient" |> parse_color in
   let diffuse = json |> member "diffuse" |> parse_color in

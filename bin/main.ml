@@ -65,6 +65,8 @@ let validate_cut_off_threshold threshold =
 
 let validate_domains domains =
   if domains < 0 then Error (`Msg "DOMAINS must be positive")
+  (* Setting num_domains too high can negatively impact performance. 
+     as noted in https://v2.ocaml.org/releases/5.0/manual/parallelism.html *)
   else if domains > num_cores () then Error (`Msg ("DOMAINS must be less than or equal to the number of cores: "^string_of_int (num_cores ())))
   else Ok ()
   
@@ -73,15 +75,15 @@ let command =
   Command.basic
     ~summary:"OCaml Ray Tracer"
     (let%map_open.Command
-      in_filename = flag "--in" (required string) ~doc:"INPUT JSON FILE NAME"
-      and out_filename = flag "--out" (required string) ~doc:"OUTPUT FILE NAME"
-      and width = flag "--width" (optional_with_default 640 int) ~doc:"OUTPUT IMAGE WIDTH (default 640)"
-      and height = flag "--height" (optional_with_default 480 int) ~doc:"OUTPUT IMAGE HEIGHT (default 480)"
-      and recursion_limit = flag "--rLimit" (optional_with_default 5 int) ~doc:"RECURSION DEPTH LIMIT (default 5)"
+      in_filename = flag "--in" (required string) ~doc:"FILENAME INPUT JSON FILE NAME"
+      and out_filename = flag "--out" (required string) ~doc:"FILENAME OUTPUT PPM FILE NAME"
+      and width = flag "--width" (optional_with_default 640 int) ~doc:"WIDTH OUTPUT IMAGE WIDTH (default 640)"
+      and height = flag "--height" (optional_with_default 480 int) ~doc:"HEIGHT OUTPUT IMAGE HEIGHT (default 480)"
+      and recursion_limit = flag "--rLimit" (optional_with_default 5 int) ~doc:"NUM RECURSION DEPTH LIMIT (default 5)"
       and cut_off_threshold = flag "--cutOff" (optional_with_default 0.0001 float) 
-        ~doc:"CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
+        ~doc:"FLOAT CUTOFF THRESHOLD representing minimum color contribution (default 0.0001)"
       and num_domains = flag "--domains" (optional_with_default 1 int)
-        ~doc:"NUMBER OF DOMAINS for Parallelism (default 1)"
+        ~doc:"NUM The NUM OF DOMAINS for Parallelism (default 1)"
     in
     fun () ->
       let validation_results = [

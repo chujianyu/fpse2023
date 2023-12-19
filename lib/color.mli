@@ -1,4 +1,3 @@
-[@@@warning "-69-27-33-32"]
 open Vector
 
 (* module Color, with r g b values b/w 0. and 1.*)

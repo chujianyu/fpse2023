@@ -1,4 +1,3 @@
-[@@@warning "-69-27-33-26"]
 open Core
 (* Module to write an RGB file given lists of lists of Color.t*)
 
