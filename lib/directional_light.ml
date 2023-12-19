@@ -33,5 +33,27 @@ let make_directional_light (p : Directional_light_param.t) = (module struct
       item.specular |> Fn.flip Color.scale (intensity ** material.shininess)
     else
       Color.empty
+
+  let transparency intersection shapes cLimit =
+    let ray_direction = Vector3f.scale item.dir (-1.) in
+    let ray_orig = Vector3f.add intersection (Vector3f.scale ray_direction 0.0001) in
+    let ray = Ray.create ~orig:ray_orig ~dir:(Vector3f.normalize ray_direction) in
+
+    let rec accumulate_transparency shapes trans =
+      match shapes with
+      | [] -> trans
+      | (module Shape : S) :: rest_shapes ->
+        let intersection_info = Shape.intersect ~ray in
+        match intersection_info with
+        | None -> accumulate_transparency rest_shapes trans 
+        | Some iInfo ->
+          let open Float in
+          let new_trans = Color.mul trans iInfo.material.transparent in
+          if Color.greater new_trans cLimit then
+            accumulate_transparency rest_shapes new_trans 
+          else 
+            new_trans
+    in
+    accumulate_transparency shapes (Color.make ~r:1.0 ~g:1.0 ~b:1.0) 
     
 end : L)

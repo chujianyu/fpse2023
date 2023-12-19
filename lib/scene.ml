@@ -6,6 +6,7 @@ open Light
 open Shape
 open Core
 
+[@@@warning "-27"]
 
 
 
@@ -28,12 +29,15 @@ let create ~camera ~lights ~shapes ~sky_enabled=
   let scene = {camera; lights; shapes; sky_enabled} in
   print_endline @@ to_string scene;
   scene
-let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection_record.t) : Color.t = 
+let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection_record.t) ~shapes ~cLimit : Color.t = 
   let f_accumulate acc light_module =
     let module Cur_light = (val light_module : L) in  
     let ambient = Color.mul (Cur_light.get_ambient ray position normal material) material.ambient in
     let diffuse = Color.mul (Cur_light.get_diffuse ray position normal material) material.diffuse in
     let specular = Color.mul (Cur_light.get_specular ray position normal material) material.specular in
+    (* Cast soft shadow by accumulating transparency values *)
+    let diffuse = Color.mul diffuse (Cur_light.transparency position shapes cLimit) in
+    let specular = Color.mul specular (Cur_light.transparency position shapes cLimit) in
     List.fold ~f:Color.add ~init:Color.empty [acc;ambient;diffuse;specular]
   in
   List.fold lights ~init:Color.empty ~f:f_accumulate
@@ -100,7 +104,7 @@ match rLimit with
     )
   | Some intersect -> 
     let emissive = intersect.material.emissive in
-    let light_contribution = get_light_contribution ray lights intersect in
+    let light_contribution = get_light_contribution ray lights intersect ~shapes ~cLimit in
     let reflection_contribution =
       if not @@ Color.greater intersect.material.specular cLimit then Color.empty
       else
@@ -109,7 +113,6 @@ match rLimit with
         else
           (* Multiplying incident ray.dir by -1 to get outgoing direction *)
           let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
-          (*let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale reflect_dir 0.01)) in *)
           let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale intersect.normal 0.001)) in 
           let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
           (* cutoff to filter out minimal contribution for early stopping *)
