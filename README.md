@@ -29,13 +29,14 @@ Please note that to accurately compare the time to ray trace with and without pa
 bisect_ppx may need to be removed from lib/dune, as it was found to interfere with the multi-threading process
 while occupying unusually high CPU resources.
 To remove bisect_ppx in lib/dune, please replace the line
-``` (preprocess
+``` 
+(preprocess
 (pps ppx_jane bisect_ppx))
 ``` 
 with 
 ``` 
 (preprocess
- (pps ppx_jane ))
+ (pps ppx_jane))
 ```
 
 ## Example Usage:
