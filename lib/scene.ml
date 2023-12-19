@@ -1,4 +1,4 @@
-[@@@warning "-69-27-33-39-32"]
+
 
 (*https://raytracing.github.io/books/RayTracingInOneWeekend.html*)
 open Vector
@@ -12,7 +12,6 @@ open Core
 type t = {camera:Camera.t; lights:(module L) list; shapes:(module S) list; sky_enabled:bool}
 
 let to_string scene =
-  let open Sexplib0.Sexp_conv in
   let lights_sexp = List.map scene.lights ~f:(fun (module Light : L) ->
     Light.sexp_of_t Light.item
   ) in
@@ -29,7 +28,7 @@ let create ~camera ~lights ~shapes ~sky_enabled=
   let scene = {camera; lights; shapes; sky_enabled} in
   print_endline @@ to_string scene;
   scene
-let get_light_contribution ray (lights:(module L) list) ({intersection_time; position; normal; material}:Intersection_record.t) : Color.t = 
+let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection_record.t) : Color.t = 
   let f_accumulate acc light_module =
     let module Cur_light = (val light_module : L) in  
     let ambient = Color.mul (Cur_light.get_ambient ray position normal material) material.ambient in
@@ -93,7 +92,7 @@ match rLimit with
       let dir_unit = Vector3f.normalize direction in 
       let y_comp = Vector3f.to_tuple dir_unit in 
       match y_comp with 
-      | (x,y,z) -> (
+      | (_,y,_) -> (
         let a = 0.5*.(y +. 1.0) in 
         Color.add (Color.scale (Color.make ~r:1.0 ~g:1.0 ~b:1.0 ) (1.0-.a))
         (Color.scale (Color.make ~r:0.5 ~g:0.7 ~b:1.0 ) (a))
@@ -132,16 +131,16 @@ match rLimit with
     let color_contributions = [emissive; light_contribution; reflection_contribution; refraction_contribution] in
     List.fold ~f:Color.add ~init:Color.empty color_contributions
   
+(* Ray trace without parallelism for demonstration purposes *)
 let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
   let get_color_at i j =
-    
     let samples = (Core.List.range ~stride:1 ~start:`inclusive
     ~stop:`inclusive 1 3) in 
     let multiplier = 1.0/.3.0 in
     Core.List.fold_left 
     samples 
     ~init:Color.empty 
-    ~f:(fun acc num -> (
+    ~f:(fun acc _ -> (
       let sample_color = 
       Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
       Color.add acc sample_color
@@ -158,30 +157,6 @@ let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLim
 we will change to use list with chunking and combining them 
 to achieve parallelization with immutable data structure. *)
 module T = Domainslib.Task
-let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool : Color.t list list = 
-let get_color_at i j =
-  (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)*)
-  let samples = (Core.List.range ~stride:1 ~start:`inclusive
-    ~stop:`inclusive 1 3) in 
-    let multiplier = 1.0/.3.0 in
-    Core.List.fold_left 
-    samples 
-
-    ~init:Color.empty 
-    ~f:(fun acc num -> (
-      let sample_color = 
-      Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
-      Color.add acc sample_color
-    ))
-in
-let colors = Array.make_matrix ~dimx:height ~dimy:width Color.empty in
-T.parallel_for pool ~start:0 ~finish:(height - 1)
-  ~body:(fun i ->
-    for j = 0 to width - 1 do
-      colors.(height-1-i).(j) <- get_color_at i j
-    done
-  );
-Array.to_list (Array.map ~f:Array.to_list colors)
 
 let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~num_domains ~pool =
 
@@ -212,9 +187,12 @@ let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLi
     all_rows
 
 let ray_trace ?(num_domains=1) {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
-print_endline @@ Printf.sprintf "Using %d domain(s)" num_domains;
-let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
-let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool ~num_domains) in
-T.teardown_pool pool;
-result
+  print_endline @@ Printf.sprintf "Using %d domain(s)" num_domains;
+  (* Could just use ray trace parallel with num_domains = 1, but keeping this for demonstration purposes and comparison *)
+  if num_domains = 1 then ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit
+  else
+    let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
+    let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool ~num_domains) in
+    T.teardown_pool pool;
+    result
 
