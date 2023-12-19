@@ -9,9 +9,12 @@ doc: "https://url/to/documentation"
 bug-reports: "https://github.com/chujianyu/fpse2023_raytracer/issues"
 depends: [
   "ocaml" {>= "5.0.0"}
+  "ounit2" {>= "2.2.7"}
   "dune" {>= "3.11"}
   "yojson"
   "domainslib"
+  "core" {>= "0.16.2"}
+  "core_unix"
   "odoc" {with-doc}
 ]
 build: [
