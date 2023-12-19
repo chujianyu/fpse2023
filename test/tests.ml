@@ -187,7 +187,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/multiple_sphere_with_sky.ppm"; 
+    "--out"; "output/test_multiple_sphere_with_sky.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -208,7 +208,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/multiple_sphere_with_sky_multi_thread.ppm"; 
+    "--out"; "output/test_multiple_sphere_with_sky_multi_thread.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -231,7 +231,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/reflection_and_refraction.ppm"; 
+    "--out"; "output/test_reflection_and_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -252,7 +252,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/reflection_and_refraction_multi_thread.ppm"; 
+    "--out"; "output/test_reflection_and_refraction_multi_thread.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -274,7 +274,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/transparent_no_refraction.ppm"; 
+    "--out"; "output/test_transparent_no_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -295,7 +295,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/transparent_no_refraction_multi_thread.ppm"; 
+    "--out"; "output/test_transparent_no_refraction_multi_thread.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -317,7 +317,7 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/no_reflection_no_refraction.ppm"; 
+    "--out"; "output/test_no_reflection_no_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -338,7 +338,50 @@ let sphere_intersect_test _ =
     ~ctxt:ctxt
     binary_path
     ["--in"; input_path; 
-    "--out"; "output/no_reflection_no_refraction_multi_thread.ppm"; 
+    "--out"; "output/test_no_reflection_no_refraction_multi_thread.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001";
+    "--domains"; "2"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
+
+  let reflection_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/reflection_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
+    "--out"; "output/test_reflection_no_refraction.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
+
+  let multi_thread_reflection_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/reflection_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
+    "--out"; "output/test_reflection_no_refraction_multi_thread.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -403,6 +446,8 @@ let end_to_end_tests =
     "multi_thread_transparent_no_refraction_test" >:: multi_thread_transparent_no_refraction_test;
     "no_reflection_no_refraction_test" >:: no_reflection_no_refraction_test;
     "multi_thread_no_reflection_no_refraction_test" >:: multi_thread_no_reflection_no_refraction_test;
+    "reflection_no_refraction_test" >:: reflection_no_refraction_test;
+    "multi_thread_reflection_no_refraction_test" >:: multi_thread_reflection_no_refraction_test;
   ]
 
 let series =
