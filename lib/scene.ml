@@ -6,11 +6,9 @@ open Light
 open Shape
 open Core
 
-[@@@warning "-27"]
-
-
-
 type t = {camera:Camera.t; lights:(module L) list; shapes:(module S) list; sky_enabled:bool}
+
+let epsilon = 0.00001
 
 let to_string scene =
   let lights_sexp = List.map scene.lights ~f:(fun (module Light : L) ->
@@ -29,6 +27,7 @@ let create ~camera ~lights ~shapes ~sky_enabled=
   let scene = {camera; lights; shapes; sky_enabled} in
   print_endline @@ to_string scene;
   scene
+
 let get_light_contribution ray (lights:(module L) list) ({position; normal; material; _}:Intersection_record.t) ~shapes ~cLimit : Color.t = 
   let f_accumulate acc light_module =
     let module Cur_light = (val light_module : L) in  
@@ -42,29 +41,24 @@ let get_light_contribution ray (lights:(module L) list) ({position; normal; mate
   in
   List.fold lights ~init:Color.empty ~f:f_accumulate
 
-
-
-  let refract ray_dir normal ir =
-    let open Float in
-    let reverse_ray_dir = Vector3f.scale ray_dir (-1.0) in
-    let dot = Vector3f.dot reverse_ray_dir normal in
-    let ir = if Float.(>) dot 0. then 1.0/.ir else ir in
-    let in_cos = Float.min 1.0 @@ Float.abs dot in
-    let in_sin = Float.sqrt @@ 1. -. in_cos *. in_cos in  
-    let out_sin = in_sin *. ir in
-    if out_sin > 1. then None
-    else 
-      let out_cos = Float.sqrt @@ 1. -. out_sin *. out_sin in
-      let first_component = Vector3f.scale normal (ir *. in_cos -. out_cos) in
-      let second_component = 
-        if dot >= 0. then Vector3f.scale ray_dir ir 
-        else Vector3f.scale reverse_ray_dir ir
-      in
-      if dot >= 0. then Some (Vector3f.add first_component second_component)
-      else Some (Vector3f.scale (Vector3f.add first_component second_component) (-1.))
-
-      
-
+let refract ray_dir normal ir =
+  let open Float in
+  let reverse_ray_dir = Vector3f.scale ray_dir (-1.0) in
+  let dot = Vector3f.dot reverse_ray_dir normal in
+  let ir = if Float.(>) dot 0. then 1.0/.ir else ir in
+  let in_cos = Float.min 1.0 @@ Float.abs dot in
+  let in_sin = Float.sqrt @@ 1. -. in_cos *. in_cos in  
+  let out_sin = in_sin *. ir in
+  if out_sin > 1. then None
+  else 
+    let out_cos = Float.sqrt @@ 1. -. out_sin *. out_sin in
+    let first_component = Vector3f.scale normal (ir *. in_cos -. out_cos) in
+    let second_component = 
+      if dot >= 0. then Vector3f.scale ray_dir ir 
+      else Vector3f.scale reverse_ray_dir ir
+    in
+    if dot >= 0. then Some (Vector3f.add first_component second_component)
+    else Some (Vector3f.scale (Vector3f.add first_component second_component) (-1.))
 
 let get_first_intersection ray shapes =
   let get_closer_intersection (closer:Intersection_record.t option) (new_intersection:Intersection_record.t option) = 
@@ -113,7 +107,7 @@ match rLimit with
         else
           (* Multiplying incident ray.dir by -1 to get outgoing direction *)
           let reflect_dir = Vector3f.reflect ( Vector3f.scale (Ray.get_dir ray) (-1.0) ) (intersect.normal) in 
-          let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale intersect.normal 0.001)) in 
+          let reflect_pos = (Vector3f.add (intersect.position)  (Vector3f.scale intersect.normal epsilon)) in 
           let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
           (* cutoff to filter out minimal contribution for early stopping *)
           let cLimit = Color.div cLimit intersect.material.specular in
@@ -125,7 +119,7 @@ match rLimit with
         match refract (Ray.get_dir ray) intersect.normal intersect.material.ir with
         | None -> Color.empty
         | Some refract_dir -> 
-          let refract_pos = (Vector3f.add (intersect.position)  (Vector3f.scale refract_dir 0.00000001)) in 
+          let refract_pos = (Vector3f.add (intersect.position)  (Vector3f.scale refract_dir epsilon)) in 
           let refract_ray = Ray.create ~orig:refract_pos ~dir:refract_dir in
           let cLimit = Color.div cLimit intersect.material.transparent in
           Color.scale (Color.mul (get_color {camera; lights; shapes; sky_enabled} refract_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)) (1.0)

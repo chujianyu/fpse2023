@@ -191,8 +191,8 @@ let sphere_intersect_test _ =
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/emission_sphere_material_test_no_light.json"; 
-    "--out"; "output/emission_sphere_material_test_no_light.ppm"; 
+    ["--in"; "example_input/multiple_sphere_with_sky.json"; 
+    "--out"; "output/multiple_sphere_with_sky.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -203,7 +203,7 @@ let sphere_intersect_test _ =
     ())
 
 
-  let multiple_light_sphere_triangle_reflection_test (ctxt : test_ctxt) =
+  let reflection_and_refraction_test (ctxt : test_ctxt) =
     let binary_path = "./_build/default/bin/main.exe" in
     OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
@@ -211,8 +211,8 @@ let sphere_intersect_test _ =
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/multiple_light_sphere_triangle_reflection.json"; 
-    "--out"; "output/multiple_light_sphere_triangle_reflection.ppm"; 
+    ["--in"; "example_input/reflection_and_refraction.json.json"; 
+    "--out"; "output/reflection_and_refraction.json.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
@@ -222,7 +222,24 @@ let sphere_intersect_test _ =
     with End_of_file ->
     ())
 
-               
+  let transparent_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; "example_input/transparent_no_refraction.json"; 
+    "--out"; "output/transparent_no_refraction.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
 
 let vector_tests =
   "vector_tests"
@@ -271,7 +288,8 @@ let end_to_end_tests =
   "end_to_end_tests"
   >::: [
     "sphere_emission_material_no_lights_test" >:: sphere_emission_material_no_lights_test;
-    "multiple_light_sphere_triangle_reflection_test" >:: multiple_light_sphere_triangle_reflection_test;
+    "reflection_and_reflection_test" >:: reflection_and_refraction_test;
+    "transparent_no_refraction_test" >:: transparent_no_refraction_test;
   ]
 
 let series =

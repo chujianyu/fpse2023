@@ -15,6 +15,8 @@ module Triangle_params = struct
       [@@deriving sexp]
   end
 
+let epsilon = 0.00001
+
 (*https://courses.cs.washington.edu/courses/csep557/14au/lectures/triangle_intersection.pdf*)
 let make_triangle (p : Triangle_params.t) = (module struct
  type t = Triangle_params.t  [@@deriving sexp]
@@ -27,7 +29,7 @@ let make_triangle (p : Triangle_params.t) = (module struct
   let pvec = cross (Ray.get_dir ray) edge2 in
   let det = dot edge1 pvec in
 
-  if det > -0.00001 && det < 0.00001 then None (* if ray is parallel to surface *)
+  if det > -epsilon && det < epsilon then None (* if ray is parallel to surface *)
   else 
     let inv_det = 1.0 /. det in
     let tvec = (Ray.get_orig ray) -: item.v0.pos in
@@ -39,7 +41,7 @@ let make_triangle (p : Triangle_params.t) = (module struct
       if v < 0.0 || u +. v > 1.0 then None
       else
         let t = dot edge2 qvec *. inv_det in
-        if t > 0.00001 then
+        if t > epsilon then
           let intersect_point = (Ray.get_orig ray) +: ((Ray.get_dir ray) *: t) in
           let w = 1.0 -. u -. v in
           (* using interpolated normal for smooth rendering *)
