@@ -7,6 +7,7 @@ open Light
 open Scene
 open Color
 open Camera
+open Core
 
 (* Module to parse parse the input json file as given in example_input/ *)
 module Parse = struct
@@ -80,15 +81,20 @@ let parse_camera json =
   let up = json |> member "up" |> parse_vector in
   let forward = json |> member "forward" |> parse_vector in
   Camera.create ~height_angle ~pos ~up ~forward
+
+let parse_sky_enabled json =
+  json |> member "skyEnabled" |> to_bool_option
+  
   
 
 
 let parse_scene filename =
   let json = Yojson.Basic.from_file filename in
-  let spheres = json |> member "spheres" |> to_list |> List.map parse_sphere in
-  let triangles = json |> member "triangles" |> to_list |> List.map parse_triangle in
-  let point_lights = json |> member "pointLights" |> to_list |> List.map parse_point_light in
+  let spheres = json |> member "spheres" |> to_list |> List.map ~f:parse_sphere in
+  let triangles = json |> member "triangles" |> to_list |> List.map ~f:parse_triangle in
+  let point_lights = json |> member "pointLights" |> to_list |> List.map ~f:parse_point_light in
   let camera = json |> member "camera" |> parse_camera in
-  Scene.create ~shapes:(spheres@triangles) ~lights:(point_lights@[]) ~camera
+  let sky_enabled = json |> parse_sky_enabled |> Option.value ~default:false in
+  Scene.create ~shapes:(spheres@triangles) ~lights:(point_lights@[]) ~camera ~sky_enabled
 
 end

@@ -13,7 +13,7 @@ open Color
 
 module Scene = struct
 
-  type t = {camera:Camera.t; lights:(module L) list; shapes:(module S) list}
+  type t = {camera:Camera.t; lights:(module L) list; shapes:(module S) list; sky_enabled:bool}
 
   let to_string scene =
     let open Sexplib0.Sexp_conv in
@@ -29,8 +29,8 @@ module Scene = struct
     let camera_str = Sexp.to_string_hum camera_sexp in
     Printf.sprintf "Scene:\nLights:\n%s\nShapes:\n%s\nCamera:\n%s\n" lights_str shapes_str camera_str
 
-  let create ~camera ~lights ~shapes = 
-    let scene = {camera; lights; shapes} in
+  let create ~camera ~lights ~shapes ~sky_enabled= 
+    let scene = {camera; lights; shapes; sky_enabled} in
     print_endline @@ to_string scene;
     scene
   let get_light_contribution ray (lights:(module L) list) ({intersection_time; position; normal; material}:Intersection_record.t) : Color.t = 
@@ -85,24 +85,24 @@ module Scene = struct
 
     (* TODO: remove unused params *)
     (*  let rec get_color {lights; shapes; _} ray ~i ~j ~rLimit  = *)
-  let rec get_color {camera; lights; shapes} ray ~i ~j ~rLimit ~(cLimit:Color.t) = 
+  let rec get_color {camera; lights; shapes; sky_enabled} ray ~i ~j ~rLimit ~(cLimit:Color.t) = 
   match rLimit with 
   | 0 -> Color.empty
   | _ ->
     match get_first_intersection ray shapes with
-    | None -> (*Color.empty*)
-    (
-      let direction = Ray.get_dir ray in 
-      let dir_unit = Vector3f.normalize direction in 
-      let y_comp = Vector3f.to_tuple dir_unit in 
-      match y_comp with 
-      | (x,y,z) -> (
-        let a = 0.5*.(y +. 1.0) in 
-        Color.add (Color.scale (Color.make ~r:1.0 ~g:1.0 ~b:1.0 ) (1.0-.a))
-        (Color.scale (Color.make ~r:0.5 ~g:0.7 ~b:1.0 ) (a))
+    | None -> if not sky_enabled then Color.empty 
+      else (* compute sky color *)
+      (
+        let direction = Ray.get_dir ray in 
+        let dir_unit = Vector3f.normalize direction in 
+        let y_comp = Vector3f.to_tuple dir_unit in 
+        match y_comp with 
+        | (x,y,z) -> (
+          let a = 0.5*.(y +. 1.0) in 
+          Color.add (Color.scale (Color.make ~r:1.0 ~g:1.0 ~b:1.0 ) (1.0-.a))
+          (Color.scale (Color.make ~r:0.5 ~g:0.7 ~b:1.0 ) (a))
+        )
       )
-  
-    )
     | Some intersect -> 
       let emissive = intersect.material.emissive in
       let light_contribution = get_light_contribution ray lights intersect in
@@ -119,7 +119,7 @@ module Scene = struct
             let reflect_ray = Ray.create ~orig:reflect_pos ~dir:reflect_dir in
             (* cutoff to filter out minimal contribution for early stopping *)
             let cLimit = Color.div cLimit intersect.material.specular in
-            Color.scale (Color.mul (get_color {camera; lights; shapes} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.specular)) (1.0) 
+            Color.scale (Color.mul (get_color {camera; lights; shapes; sky_enabled} reflect_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.specular)) (1.0) 
       in
       let refraction_contribution = 
         if not @@ Color.greater intersect.material.transparent cLimit then Color.empty
@@ -130,13 +130,13 @@ module Scene = struct
             let refract_pos = (Vector3f.add (intersect.position)  (Vector3f.scale refract_dir 0.00000001)) in 
             let refract_ray = Ray.create ~orig:refract_pos ~dir:refract_dir in
             let cLimit = Color.div cLimit intersect.material.transparent in
-            Color.scale (Color.mul (get_color {camera; lights; shapes} refract_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)) (1.0)
+            Color.scale (Color.mul (get_color {camera; lights; shapes; sky_enabled} refract_ray ~i:i ~j:j ~rLimit:(rLimit-1) ~cLimit) (intersect.material.transparent)) (1.0)
       in
 
       let color_contributions = [emissive; light_contribution; reflection_contribution; refraction_contribution] in
       List.fold ~f:Color.add ~init:Color.empty color_contributions
     
-  let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 
+  let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
     let get_color_at i j =
       
       let samples = (Core.List.range ~stride:1 ~start:`inclusive
@@ -147,7 +147,7 @@ module Scene = struct
       ~init:Color.empty 
       ~f:(fun acc num -> (
         let sample_color = 
-        Color.scale  ( get_color {camera; lights; shapes}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
+        Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
         Color.add acc sample_color
       ))
      
@@ -174,7 +174,7 @@ let num_cores () =
 we will change to use list with chunking and combining them 
 to achieve parallelization with immutable data structure. *)
 module T = Domainslib.Task
-let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~pool : Color.t list list = 
+let ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool : Color.t list list = 
   let get_color_at i j =
     (*get_color {camera; lights; shapes} (Camera.get_ray camera ~i ~j ~width ~height) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit)*)
     let samples = (Core.List.range ~stride:1 ~start:`inclusive
@@ -186,7 +186,7 @@ let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~
       ~init:Color.empty 
       ~f:(fun acc num -> (
         let sample_color = 
-        Color.scale  ( get_color {camera; lights; shapes}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
+        Color.scale  ( get_color {camera; lights; shapes; sky_enabled}  (Camera.get_ray camera ~i ~j ~width ~height ~random:true) ~i ~j ~rLimit ~cLimit:(Color.make ~r:cLimit ~g:cLimit ~b:cLimit) )multiplier in 
         Color.add acc sample_color
       ))
   in
@@ -199,13 +199,13 @@ let ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~
     );
   Array.to_list (Array.map ~f:Array.to_list colors)
 
-let ray_trace {camera; lights; shapes} ~width ~height ~rLimit ~cLimit : Color.t list list = 
+let ray_trace {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit : Color.t list list = 
   (* Number of cpu cores. Using half of the cores now, as setting it higher
      than what's available can negatively impact performance *)
   let num_domains = max 1 (num_cores () / 2) in 
   print_endline @@ Printf.sprintf "Using %d cores" num_domains;
   let pool = T.setup_pool ~num_domains:(num_domains - 1) () in
-  let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes} ~width ~height ~rLimit ~cLimit ~pool) in
+  let result = T.run pool (fun () -> ray_trace_parallel {camera; lights; shapes; sky_enabled} ~width ~height ~rLimit ~cLimit ~pool) in
   T.teardown_pool pool;
   result
 
