@@ -18,6 +18,9 @@ let make_sphere (p : Sphere_params.t) = (module struct
  let item = p
  let intersect ~(ray:Ray.t) : Intersection_record.t option= 
   let open Vector3f in
+  (*(x−c)⋅(x−c)=r^2 where c is the center of sphere
+     substitute x = o+td into the equation to solve for t
+     where o is origin of ray, d is direction, and t is time*)
   let oc = (Ray.get_orig ray) -: p.center in
   let a = Vector3f.dot (Ray.get_dir ray) (Ray.get_dir ray) in
   let b = 2. *. (Vector3f.dot oc (Ray.get_dir ray)) in
