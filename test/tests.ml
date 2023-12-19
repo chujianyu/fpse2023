@@ -211,8 +211,8 @@ let sphere_intersect_test _ =
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/reflection_and_refraction.json.json"; 
-    "--out"; "output/reflection_and_refraction.json.ppm"; 
+    ["--in"; "example_input/reflection_and_refraction.json"; 
+    "--out"; "output/reflection_and_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
     "--rLimit"; "5"; 
