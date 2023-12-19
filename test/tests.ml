@@ -4,7 +4,7 @@ open Fpse2023_raytracer_lib
 
 (*ref:https://bheisler.github.io/post/writing-raytracer-in-rust-part-2/*)
 (*ref:Ray Tracer Challenge : A Test-driven Guide to Your First 3d Renderer*)
-
+[@@@warning "-32"]
 let test_from_list _ = 
   let expected_1 = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:5. ~y:6. ~z:7. in 
   let result_1 = Fpse2023_raytracer_lib.Vector.Vector3f.from_list [5.;6.;7.] in 
@@ -99,16 +99,9 @@ let add_vector _ =
 let reflect_vector _ = 
   let one = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:1. ~y:0. ~z:0. in 
   let two = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:0. ~y:1. ~z:0. in 
-  
   let expected = Fpse2023_raytracer_lib.Vector.Vector3f.create ~x:(-1.0) ~y:0. ~z:0. in
   let result = Vector.Vector3f.reflect one two in 
-  (*let s = (Core.Sexp.to_string(Vector.Vector3f.sexp_of_t result))  in 
-  let () = Core.Printf.printf "%s" s in*)
   assert_equal result @@  expected
-
-
-
-
 
 
 let sphere_intersect_test _ = 
@@ -183,15 +176,17 @@ let sphere_intersect_test _ =
     | _ -> false;;
 
   Sys_unix.chdir "../../..";;
-  let sphere_emission_material_no_lights_test (ctxt : test_ctxt) =
+  let multiple_sphere_with_sky_test (ctxt : test_ctxt) =
     let binary_path = "./_build/default/bin/main.exe" in
     OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path);
+    let input_path = "example_input/multiple_sphere_with_sky.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
     (*assert true*)
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/multiple_sphere_with_sky.json"; 
+    ["--in"; input_path; 
     "--out"; "output/multiple_sphere_with_sky.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
@@ -202,16 +197,40 @@ let sphere_intersect_test _ =
     with End_of_file ->
     ())
 
-
-  let reflection_and_refraction_test (ctxt : test_ctxt) =
+  let multi_thread_multiple_sphere_with_sky_test (ctxt : test_ctxt) =
     let binary_path = "./_build/default/bin/main.exe" in
-    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path);
+    let input_path = "example_input/multiple_sphere_with_sky.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
     (*assert true*)
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/reflection_and_refraction.json"; 
+    ["--in"; input_path; 
+    "--out"; "output/multiple_sphere_with_sky_multi_thread.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001";
+    "--domains"; "2"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ())
+
+
+  let reflection_and_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/reflection_and_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
     "--out"; "output/reflection_and_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
@@ -222,15 +241,39 @@ let sphere_intersect_test _ =
     with End_of_file ->
     ())
 
-  let transparent_no_refraction_test (ctxt : test_ctxt) =
+  let multi_thread_reflection_and_refraction_test (ctxt : test_ctxt) =
     let binary_path = "./_build/default/bin/main.exe" in
     OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/reflection_and_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
     let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
     (*assert true*)
     assert_command 
     ~ctxt:ctxt
     binary_path
-    ["--in"; "example_input/transparent_no_refraction.json"; 
+    ["--in"; input_path; 
+    "--out"; "output/reflection_and_refraction_multi_thread.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001";
+    "--domains"; "2"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ())
+
+  let transparent_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/transparent_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
     "--out"; "output/transparent_no_refraction.ppm"; 
     "--height"; "500"; 
     "--width"; "500"; 
@@ -241,18 +284,83 @@ let sphere_intersect_test _ =
     with End_of_file ->
     ()) 
 
+  let multi_thread_transparent_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/transparent_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
+    "--out"; "output/transparent_no_refraction_multi_thread.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001";
+    "--domains"; "2"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
+
+  let no_reflection_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/no_reflection_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
+    "--out"; "output/no_reflection_no_refraction.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
+
+  let multi_thread_no_reflection_no_refraction_test (ctxt : test_ctxt) =
+    let binary_path = "./_build/default/bin/main.exe" in
+    OUnit2.assert_bool ("Run dune build first; Binary not found: " ^ binary_path) (is_file_present binary_path) ;
+    let input_path = "example_input/no_reflection_no_refraction.json" in
+    OUnit2.assert_bool ("Input file not found: " ^ input_path) (is_file_present input_path);
+    let () = Core.Printf.printf "dir: %s \n"(Sys_unix.getcwd ()) in
+    (*assert true*)
+    assert_command 
+    ~ctxt:ctxt
+    binary_path
+    ["--in"; input_path; 
+    "--out"; "output/no_reflection_no_refraction_multi_thread.ppm"; 
+    "--height"; "500"; 
+    "--width"; "500"; 
+    "--rLimit"; "5"; 
+    "--cutOff"; "0.0001";
+    "--domains"; "2"]
+    ~foutput:(fun seq -> try 
+    Seq.iter (fun ch -> let() = Core.Printf.printf "%c" ch in ignore ch) seq
+    with End_of_file ->
+    ()) 
+  
 let vector_tests =
   "vector_tests"
   >: test_list
-        [
-          "add_vector">:: add_vector;
-          "reflect_vector">:: reflect_vector;
-          "test_empty_vector" >:: test_empty_vector;
-          "test_from_list" >:: test_from_list;
-          "test_to_tuple" >:: test_to_tuple;
-          "test_divide_vector" >:: test_divide_vector;
-          "test_cross" >:: test_cross;
-        ]
+  [
+    "add_vector">:: add_vector;
+    "reflect_vector">:: reflect_vector;
+    "test_empty_vector" >:: test_empty_vector;
+    "test_from_list" >:: test_from_list;
+    "test_to_tuple" >:: test_to_tuple;
+    "test_divide_vector" >:: test_divide_vector;
+    "test_cross" >:: test_cross;
+  ]
 
 let color_tests = 
   "color_tests"
@@ -272,24 +380,29 @@ let color_tests =
 let shape_tests =
   "shape_tests"
   >: test_list
-        [
-          "sphere_intersect_test">:: sphere_intersect_test;
-        ]
+  [
+    "sphere_intersect_test">:: sphere_intersect_test;
+  ]
 let full_image_tests =
   "full_image_tests"
   >: test_list
-        [
-          "sphere_intersect_test">:: sphere_intersect_test;
-          "quick_test_ray_triangle_intersection">:: quick_test_ray_triangle_intersection;
-        ]
+  [
+    "sphere_intersect_test">:: sphere_intersect_test;
+    "quick_test_ray_triangle_intersection">:: quick_test_ray_triangle_intersection;
+  ]
 
 (* output images placed in output/ folder for inspection *)
 let end_to_end_tests =
   "end_to_end_tests"
   >::: [
-    "sphere_emission_material_no_lights_test" >:: sphere_emission_material_no_lights_test;
+    "multiple_sphere_with_sky_test" >:: multiple_sphere_with_sky_test;
+    "multi_thread_multiple_sphere_with_sky_test" >:: multi_thread_multiple_sphere_with_sky_test;
     "reflection_and_reflection_test" >:: reflection_and_refraction_test;
+    "multi_thread_reflection_and_refraction_test" >:: multi_thread_reflection_and_refraction_test;
     "transparent_no_refraction_test" >:: transparent_no_refraction_test;
+    "multi_thread_transparent_no_refraction_test" >:: multi_thread_transparent_no_refraction_test;
+    "no_reflection_no_refraction_test" >:: no_reflection_no_refraction_test;
+    "multi_thread_no_reflection_no_refraction_test" >:: multi_thread_no_reflection_no_refraction_test;
   ]
 
 let series =
