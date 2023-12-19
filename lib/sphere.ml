@@ -2,6 +2,16 @@
 open Vector
 open Ray
 open Shape
+open Core
+
+module Sphere_params = struct
+  type t =
+    {
+      center : Vector3f.t;
+      radius : float;
+      material : Material.t
+    } [@@deriving sexp]
+end 
 
 let make_sphere (p : Sphere_params.t) = (module struct
  type t = Sphere_params.t  [@@deriving sexp]
@@ -13,6 +23,7 @@ let make_sphere (p : Sphere_params.t) = (module struct
   let b = 2. *. (Vector3f.dot oc (Ray.get_dir ray)) in
   let c = Vector3f.dot oc oc -. (p.radius *. p.radius) in
   let discriminant = b *. b -. 4. *. a *. c in
+  let open Float in
   if discriminant < 0. then None
   else
     let t1 = (-.b -. sqrt discriminant) /. (2. *. a) in

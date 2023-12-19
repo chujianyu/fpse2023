@@ -38,51 +38,51 @@ let test_cross _ =
 
 let test_to_tuple_col _ = 
   let expected = (1.0, 1.0, 1.0) in 
-  let result = Color.Color.to_tuple {Fpse2023_raytracer_lib.Color.Color.r = 1.; g = 1.; b = 1.} in 
+  let result = Color.to_tuple {Fpse2023_raytracer_lib.Color.r = 1.; g = 1.; b = 1.} in 
   assert_equal result @@ expected
 
 let test_to_vector_col _ = 
   let expected = Vector.Vector3f.create ~x:1. ~y:1. ~z:1. in 
-  let result = Color.Color.to_vector {Fpse2023_raytracer_lib.Color.Color.r = 1.; g = 1.; b = 1.} in 
+  let result = Color.to_vector {Fpse2023_raytracer_lib.Color.r = 1.; g = 1.; b = 1.} in 
   assert_equal result @@ expected
 
 let test_from_vector_col _ = 
-  let expected = {Fpse2023_raytracer_lib.Color.Color.r = 2.; g = 2.; b = 2.} in 
-  let result = Color.Color.from_vector (Vector.Vector3f.create ~x:2. ~y:2. ~z:2.) in 
+  let expected = {Fpse2023_raytracer_lib.Color.r = 2.; g = 2.; b = 2.} in 
+  let result =Color.from_vector (Vector.Vector3f.create ~x:2. ~y:2. ~z:2.) in 
   assert_equal result @@ expected
 
-let color_1 = Color.Color.make ~r:6. ~g:6. ~b:6. 
-let color_2 = Color.Color.make ~r:1. ~g:2. ~b:3.
+let color_1 = Color.make ~r:6. ~g:6. ~b:6. 
+let color_2 = Color.make ~r:1. ~g:2. ~b:3.
 
 let test_add_col _ = 
-  let expected = Color.Color.make ~r:7. ~g:8. ~b:9. in 
-  let result = Color.Color.add color_1 color_2 in 
+  let expected = Color.make ~r:7. ~g:8. ~b:9. in 
+  let result = Color.add color_1 color_2 in 
   assert_equal result @@ expected
 
 let test_sub_col _ = 
-  let expected = Color.Color.make ~r:5. ~g:4. ~b:3. in 
-  let result = Color.Color.sub color_1 color_2 in 
+  let expected = Color.make ~r:5. ~g:4. ~b:3. in 
+  let result = Color.sub color_1 color_2 in 
   assert_equal result @@ expected
 
 let test_mul_col _ = 
-  let expected = Color.Color.make ~r:6. ~g:12. ~b:18. in 
-  let result = Color.Color.mul color_1 color_2 in 
+  let expected = Color.make ~r:6. ~g:12. ~b:18. in 
+  let result = Color.mul color_1 color_2 in 
   assert_equal result @@ expected
 
 let test_div_col _ = 
-  let expected = Color.Color.make ~r:6. ~g:3. ~b:2. in 
-  let result = Color.Color.div color_1 color_2 in 
+  let expected = Color.make ~r:6. ~g:3. ~b:2. in 
+  let result = Color.div color_1 color_2 in 
   assert_equal result @@ expected
 
 let test_scale_col _ = 
-  let expected = Color.Color.make ~r:12. ~g:12. ~b:12. in 
-  let result = Color.Color.scale color_1 2.0 in 
+  let expected = Color.make ~r:12. ~g:12. ~b:12. in 
+  let result = Color.scale color_1 2.0 in 
   assert_equal result @@ expected
 
 let test_greater_col _ =
-  let result = Color.Color.greater color_1 color_2 in
+  let result = Color.greater color_1 color_2 in
   assert_bool "greater than" result;
-  let result = not @@ Color.Color.greater color_2 color_1 in
+  let result = not @@ Color.greater color_2 color_1 in
   assert_bool "less than"  result
 
 
@@ -112,10 +112,9 @@ let reflect_vector _ =
 
 
 let sphere_intersect_test _ = 
+  let open Sphere in
   let open Vector in
-  let open Ray in 
   let open Shape in
-  let open Color in
   let current_sphere_material_params:Material.t = 
   {ambient=Color.make~r:0.~g:0.~b:0.;
   specular=Color.make~r:0.~g:0.~b:0.;
@@ -140,9 +139,8 @@ let sphere_intersect_test _ =
 
   let quick_test_ray_triangle_intersection _ =
     let open Vector in
-    let open Ray in
     let open Shape in
-    let open Color in
+    let open Triangle in
     let v0 = Vertex.{pos=(Vector3f.create ~x:(-2.)~y:0.~z:2.); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in
     let v1 = Vertex.{pos=(Vector3f.create ~x:(2.)~y:0.~z:2.); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in
     let v2 = Vertex.{pos=(Vector3f.create ~x:(2.)~y:0.~z:(-2.)); normal=(Vector3f.create ~x:0.~y:1.~z:0.)} in

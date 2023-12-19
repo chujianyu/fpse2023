@@ -2,8 +2,8 @@ open Vector
 
 (* Material module. Represents the material of a shape *)
 module Material : sig
-  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; transparent : Color.t; shininess : float; ir : float} 
-  (* [@@deriving sexp] *)
+  type t = {ambient : Color.t; diffuse : Color.t; specular : Color.t; emissive : Color.t; 
+  transparent : Color.t; shininess : float; ir : float} [@@deriving sexp]
 end
 
 (* Intersection_record module. Represents the information about a ray-shape intersection *)
@@ -19,34 +19,8 @@ module Vertex :
       {
         pos : Vector3f.t;
         normal : Vector3f.t;
-      } 
-      (* [@@deriving sexp] *)
+      } [@@deriving sexp]
   end
-
-(* Triagnle_params module. Represents the parameters necessary used to create a triangle*)
-module Triangle_params :
-  sig
-    type t = 
-      {
-        v0 : Vertex.t;
-        v1 : Vertex.t;
-        v2 : Vertex.t;
-        material : Material.t
-      } 
-      [@@deriving sexp]
-  end
-
-(* Sphere_params module. *)
-module Sphere_params :
-sig
-  type t =
-    {
-      center : Vector3f.t;
-      radius : float;
-      material : Material.t
-    } 
-    [@@deriving sexp]
-end 
 
 
 (* Shared module type for s shape. Designed to support use of first-class modules *)

@@ -3,6 +3,18 @@ open Vector
 open Ray
 open Shape
 open Core
+
+module Triangle_params = struct
+    type t = 
+      {
+        v0 : Vertex.t;
+        v1 : Vertex.t;
+        v2 : Vertex.t;
+        material : Material.t
+      } 
+      [@@deriving sexp]
+  end
+
 (*https://courses.cs.washington.edu/courses/csep557/14au/lectures/triangle_intersection.pdf*)
 let make_triangle (p : Triangle_params.t) = (module struct
  type t = Triangle_params.t  [@@deriving sexp]

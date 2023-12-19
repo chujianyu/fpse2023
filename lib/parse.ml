@@ -37,6 +37,7 @@ let parse_vertex json =
   }
 
 let parse_triangle json = 
+  let open Triangle in
   let params = {
     Triangle_params.v0 = parse_vertex (member "v0" json);
     v1 = parse_vertex (member "v1" json);
@@ -46,6 +47,7 @@ let parse_triangle json =
   Triangle.make_triangle params
 
 let parse_sphere json = 
+  let open Sphere in
   let params = {
     Sphere_params.center = parse_vector (member "center" json);
     radius = member "radius" json |> to_float;
