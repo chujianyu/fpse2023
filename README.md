@@ -25,6 +25,8 @@ Please note that that "dune test" requires a built binary by first running dune 
 
 
 ### Notes about Parallelism
+The program will print the time ray tracing takes.
+
 Please note that to accurately compare the time to ray trace with and without parallelism,
 bisect_ppx may need to be removed from lib/dune, as it was found to interfere with the multi-threading process
 while occupying unusually high CPU resources.
