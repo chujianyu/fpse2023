@@ -7,8 +7,11 @@ Please find our project proposal at ./fpse_project_proposal.pdf
 
 ## Project Repo Structure
 example_input/ contains the input json files that describes a 3D scene.
+
 output/ contains the output from our tests and demonstration.
+
 lib/ contains our library for ray tracing.
+
 bin/ contains our main ray tracer program.
 
 ## Usage
